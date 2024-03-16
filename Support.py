@@ -1,4 +1,33 @@
 from copy import deepcopy 
+import heapq
+
+class PriorityQueue:
+    def __init__(self):
+        self.elements = []
+    
+    def empty(self):
+        return len(self.elements) == 0
+    
+    def push(self, item, priority):
+        heapq.heappush(self.elements, (priority, item))
+    
+    def pop(self):
+        return heapq.heappop(self.elements)[1]
+    
+class Node:
+    def __init__(self, state, parent, action, path_cost):
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.path_cost = path_cost
+        self.heuristic = 0
+        
+    def calculate_heuristic(self):
+        for i in range(len(self.state)):
+            for j in range(len(self.state[0])):
+                if self.state[i][j] == 4:
+                    self.heuristic += 1 #total number of observed cells
+        return self.heuristic
 
 # Funtion to return list of distinct cells that an agent can observe
 def logic_vision(realMap, rad, curPosX, curPosY, N, M):
@@ -49,3 +78,4 @@ def logic_vision(realMap, rad, curPosX, curPosY, N, M):
                         if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 9:
                             res.append((nextPosY2, nextPosX2))
     return list(set(res))
+
