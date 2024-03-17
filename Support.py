@@ -30,7 +30,9 @@ class Node:
         return self.heuristic
 
 # Funtion to return list of distinct cells that an agent can observe
-def logic_vision(realMap, rad, curPosX, curPosY, N, M):
+# curPosY: initial row of the agent
+# curPosX: initial column of the agent
+def logic_vision(realMap, rad, curPosY, curPosX, N, M):
     map = deepcopy(realMap)
     res = []
     res.append((curPosY, curPosX))
