@@ -32,7 +32,7 @@ class Node:
 # Funtion to return list of distinct cells that an agent can observe
 # curPosY: initial row of the agent
 # curPosX: initial column of the agent
-def logic_vision(realMap, rad, curPosY, curPosX, N, M):
+def logic_vision(realMap, rad, curPosy, curPosX, N, M):
     map = deepcopy(realMap)
     res = []
     res.append((curPosY, curPosX))
@@ -46,21 +46,21 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
         for t in range(3):
             for i in range(1, 1+rad):
                 # Kiem tra co dang o hoac ke bien
-                if curPosY + i*direction[quarter][t][0] <= 0 or curPosX + i*direction[quarter][t][1] <= 0 or curPosY + i*direction[quarter][t][0] >= N or curPosX + i*direction[quarter][t][1] >= M:
-                    break
-                res.append((curPosY + i*direction[quarter][t][0], curPosX + i*direction[quarter][t][1]))
+                if curPosY + i*direction[quarter][t][0] < 0 or curPosX + i*direction[quarter][t][1] < 0 or curPosY + i*direction[quarter][t][0] >= N or curPosX + i*direction[quarter][t][1] >= M:
+                    break        
+                res.append((curPosY + i*direction[quarter][t][0], curPosX + i*direction[quarter][t][1]))     
                 if map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 1:
-                    if i == 1 & rad == 3:
+                    if i == 1 and rad == 3:
                         # Danh dau o 10 neu bi chan o 1
                         if t == 0: 
-                            map[curPosY + direction[quarter][3][0]][curPosX + direction[quarter][3][1]] = 9
+                            map[curPosY + direction[quarter][t][0] + direction[quarter][3][0]][curPosX + direction[quarter][t][1] + direction[quarter][3][1]] = 9
                         # Danh dau o 14 neu bi chan o 3
                         elif t == 2: 
-                            map[curPosY + direction[quarter][4][0]][curPosX + direction[quarter][4][1]] = 9
+                            map[curPosY + direction[quarter][t][0] + direction[quarter][4][0]][curPosX + direction[quarter][t][1] + direction[quarter][4][1]] = 9
                         # Danh dau o 11 va 13 neu bi chan o 2
-                        else:
-                            map[curPosY + direction[quarter][3][0]][curPosX + direction[quarter][3][1]] = 9
-                            map[curPosY + direction[quarter][4][0]][curPosX + direction[quarter][4][1]] = 9
+                        else:                    
+                            map[curPosY + direction[quarter][t][0] + direction[quarter][3][0]][curPosX + direction[quarter][t][1] + direction[quarter][3][1]] = 9
+                            map[curPosY + direction[quarter][t][0] + direction[quarter][4][0]][curPosX + direction[quarter][t][1] + direction[quarter][4][1]] = 9
                     # Dung ngay khi gap o bi chan
                     break
         # Kiem tra neu o 5, o 7 bi chan
