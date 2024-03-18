@@ -29,7 +29,7 @@ class Node:
                     self.heuristic += 1 #total number of observed cells
         return self.heuristic
 
-# Funtion to return list of distinct cells that an agent can observe
+# Funtion to return list of distinct cells that an agent can observe, include wall, exclude current position
 # curPosY: initial row of the agent
 # curPosX: initial column of the agent
 def logic_vision(realMap, rad, curPosy, curPosX, N, M):
@@ -79,5 +79,7 @@ def logic_vision(realMap, rad, curPosy, curPosX, N, M):
                         nextPosX2 = curPosX + direction[quarter][3+k][1] + direction[quarter][1+k][1]
                         if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 9:
                             res.append((nextPosY2, nextPosX2))
-    return list(set(res))
+    res = list(set(res))
+    res.pop(res.index((curPosY, curPosX)))
+    return res
 
