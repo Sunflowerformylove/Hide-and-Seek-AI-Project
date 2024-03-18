@@ -29,10 +29,10 @@ class Node:
                     self.heuristic += 1 #total number of observed cells
         return self.heuristic
 
-# Funtion to return list of distinct cells that an agent can observe, include wall, exclude current position
+# Funtion to return list of distinct cells that an agent can observe, exclude current position and wall
 # curPosY: initial row of the agent
 # curPosX: initial column of the agent
-def logic_vision(realMap, rad, curPosy, curPosX, N, M):
+def logic_vision(realMap, rad, curPosY, curPosX, N, M):
     map = deepcopy(realMap)
     res = []
     res.append((curPosY, curPosX))
@@ -50,6 +50,7 @@ def logic_vision(realMap, rad, curPosy, curPosX, N, M):
                     break        
                 res.append((curPosY + i*direction[quarter][t][0], curPosX + i*direction[quarter][t][1]))     
                 if map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 1:
+                    res.pop()
                     if i == 1 and rad == 3:
                         # Danh dau o 10 neu bi chan o 1
                         if t == 0: 
@@ -79,7 +80,8 @@ def logic_vision(realMap, rad, curPosy, curPosX, N, M):
                         nextPosX2 = curPosX + direction[quarter][3+k][1] + direction[quarter][1+k][1]
                         if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 9:
                             res.append((nextPosY2, nextPosX2))
+                    else:
+                        res.pop()
     res = list(set(res))
     res.pop(res.index((curPosY, curPosX)))
     return res
-
