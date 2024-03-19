@@ -14,25 +14,15 @@ class PriorityQueue:
     def pop(self):
         return heapq.heappop(self.elements)[1]
     
-class Node:
-    def __init__(self, state, parent, action, path_cost):
-        self.state = state
-        self.parent = parent
-        self.action = action
-        self.path_cost = path_cost
-        self.heuristic = 0
-        
-    def calculate_heuristic(self):
-        for i in range(len(self.state)):
-            for j in range(len(self.state[0])):
-                if self.state[i][j] == 4:
-                    self.heuristic += 1 #total number of observed cells
-        return self.heuristic
 
 # Funtion to return list of distinct cells that an agent can observe
 # curPosY: initial row of the agent
 # curPosX: initial column of the agent
-def logic_vision(realMap, rad, curPosy, curPosX, N, M):
+def is_not_wall(map, posY, posX):
+    return map[posY][posX] != 1
+
+
+def logic_vision(realMap, rad, curPosY, curPosX, N, M):
     map = deepcopy(realMap)
     res = []
     res.append((curPosY, curPosX))
