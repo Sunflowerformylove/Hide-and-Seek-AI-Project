@@ -1,5 +1,11 @@
 from copy import deepcopy 
 import heapq
+import math
+
+# Calculate Manhattan distance between 2 cells
+def manhattanDist(row1, col1, row2, col2):
+    dist = math.fabs(row2 - row1) + math.fabs(col2 - col1)
+    return (int)(dist)
 
 class PriorityQueue:
     def __init__(self):
@@ -14,13 +20,26 @@ class PriorityQueue:
     def pop(self):
         return heapq.heappop(self.elements)[1]
     
+class Node:
+    def __init__(self, state, parent, action, path_cost):
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.path_cost = path_cost
+        self.heuristic = 0
+        
+    def calculate_heuristic(self):
+        for i in range(len(self.state)):
+            for j in range(len(self.state[0])):
+                if self.state[i][j] == 4:
+                    self.heuristic += 1 #total number of observed cells
+        return self.heuristic
 
 # Funtion to return list of distinct cells that an agent can observe
 # curPosY: initial row of the agent
 # curPosX: initial column of the agent
 def is_not_wall(map, posY, posX):
     return map[posY][posX] != 1
-
 
 def logic_vision(realMap, rad, curPosY, curPosX, N, M):
     map = deepcopy(realMap)
@@ -40,6 +59,7 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
                     break        
                 res.append((curPosY + i*direction[quarter][t][0], curPosX + i*direction[quarter][t][1]))     
                 if map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 1:
+                    res.pop()
                     if i == 1 and rad == 3:
                         # Danh dau o 10 neu bi chan o 1
                         if t == 0: 
@@ -69,5 +89,8 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
                         nextPosX2 = curPosX + direction[quarter][3+k][1] + direction[quarter][1+k][1]
                         if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 9:
                             res.append((nextPosY2, nextPosX2))
-    return list(set(res))
-
+                    else:
+                        res.pop()
+    res = list(set(res))
+    res.pop(res.index((curPosY, curPosX)))
+    return res
