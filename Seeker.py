@@ -115,10 +115,11 @@ class Seeker:
             if self.map[cell[0]][cell[1]] != 2 and self.map[cell[0]][cell[1]] != 3 and self.map[cell[0]][cell[1]] != 1:
                 self.map[cell[0]][cell[1]] = 4
 
-    def move_to_center(self, map_dimensions: tuple[int, int]) -> bool:
+    def move(self, map_dimensions: tuple[int, int]) -> bool:
         frontier = PriorityQueue()
         frontier.push(self, 0)
         visited = {tuple(map(tuple, self.map)): 0}
+        hiders_pos = []
         while not frontier.empty():
             current = frontier.pop()
             current_pos = current.get_current_pos(3)
@@ -128,7 +129,8 @@ class Seeker:
                 if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
                     current.map[cell[0]][cell[1]] = 4
                 elif current.map[cell[0]][cell[1]] == 2:
-                    print("Hider found")
+                    print("Hider(s) found")
+                    hiders_pos.append((cell[0], cell[1]))
                     return current, cell
             if current_pos == current.get_map_center():
                 print("Center reached")
