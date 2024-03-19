@@ -12,6 +12,12 @@ import copy
 
 
 def swap(map: list[list[int]], pos1: tuple[int, int], pos2: tuple[int, int]) -> None:
+    if map[pos1[0]][pos1[1]] == 3 and map[pos2[0]][pos2[1]] == 2:
+        map[pos1[0]][pos1[1]] = 3
+        map[pos2[0]][pos2[1]] = 4
+    elif map[pos1[0]][pos1[1]] == 2 and map[pos2[0]][pos2[1]] == 3:
+        map[pos1[0]][pos1[1]] = 4
+        map[pos2[0]][pos2[1]] = 3
     map[pos1[0]][pos1[1]], map[pos2[0]][pos2[1]
                                         ] = map[pos2[0]][pos2[1]], map[pos1[0]][pos1[1]]
 
@@ -101,8 +107,8 @@ class Seeker:
         heuristic = 0
         for i in range(len(self.map)):
             for j in range(len(self.map[0])):
-                if self.map[i][j] == 4:
-                    heuristic += 1  # largest number of observed cells
+                if self.map[i][j] == 0:
+                    heuristic += 1  # minimum number of unobserved cells
         self.heuristic = heuristic
 
     def calculate_heuristic_manhattan(self, goalX, goalY) -> int:
@@ -110,7 +116,7 @@ class Seeker:
             abs(self.current_pos[1] - goalY)
         self.heuristic = heuristic
         
-    def format_map_by_vision(self, map_dimensions: tuple[int, int], vision: list[tuple]) -> list[list[int]]:
+    def format_map_by_vision(self, vision: list[tuple]) -> list[list[int]]:
         for cell in vision:
             if self.map[cell[0]][cell[1]] != 2 and self.map[cell[0]][cell[1]] != 3 and self.map[cell[0]][cell[1]] != 1:
                 self.map[cell[0]][cell[1]] = 4
@@ -129,12 +135,8 @@ class Seeker:
                 if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
                     current.map[cell[0]][cell[1]] = 4
                 elif current.map[cell[0]][cell[1]] == 2:
-                    print("Hider(s) found")
                     hiders_pos.append((cell[0], cell[1]))
-                    return current, cell
-            if current_pos == current.get_map_center():
-                print("Center reached")
-                return current
+                    return (current, cell)
             successors = current.generation(map_dimensions)
             for successor in successors:
                 successor_tuple_map = tuple(map(tuple, successor.map))

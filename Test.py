@@ -21,11 +21,10 @@ seeker = Seeker(maze, 3, 0, None)
 # vision = logic_vision(maze, 3, seeker.current_pos[0], seeker.current_pos[1], len(maze), len(maze[0]))
 
 # print_maze(maze)
-(move_result, hider_pos)= seeker.move((7,7))
-path1 = backtrace(move_result)
-trace = seeker.trace_hider((7,7), hider_pos, move_result)
+(move_result, hider_pos)= seeker.move((8,11))
+trace = seeker.trace_hider((8,11), hider_pos, move_result)
 path2 = backtrace(trace)
 
-for node in path2:
+for node, heu in path2:
     print_maze(node)
     print()
