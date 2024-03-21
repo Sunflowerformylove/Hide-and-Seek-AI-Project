@@ -50,19 +50,19 @@ def pause_frame() -> None:
 def show_maze(maze: list[list[int]]) -> None:
     offset_width = WIDTH // 2 - len(maze[0]) * CELL_SIZE // 2
     offset_height = HEIGHT // 2 - len(maze) * CELL_SIZE // 2
-    border = 3
+    border = 1
     for i in range(len(maze)):
         for j in range(len(maze[0])):
             if maze[i][j] == 1:
-                pygame.draw.rect(screen, "black", (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                pygame.draw.rect(screen, (2, 1, 10), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             elif maze[i][j] == 2:
-                pygame.draw.rect(screen, "red", (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                pygame.draw.rect(screen, (115, 29, 216), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             elif maze[i][j] == 3:
-                pygame.draw.rect(screen, (0, 0, 34), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                pygame.draw.rect(screen, (72, 169, 166), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             elif maze[i][j] == 4:
-                pygame.draw.rect(screen, "teal", (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+                pygame.draw.rect(screen, (213, 176, 172), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             else:
-                pygame.draw.rect(screen, "black", (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)
+                pygame.draw.rect(screen, (2, 1, 10), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)
 
 maze = read_maze("maze.txt")
 seeker = Seeker(maze, 3, 0, None)
@@ -77,7 +77,7 @@ for node in path2:
     pygame.display.flip()
     show_maze(node)
     pygame.display.flip()
-    clock.tick(1)
+    clock.tick(2)
 
 for event in pygame.event.get():
     if event.type == pygame.QUIT:
