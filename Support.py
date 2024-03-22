@@ -63,7 +63,9 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
                         elif t == 2: 
                             map[curPosY + direction[quarter][t][0] + direction[quarter][4][0]][curPosX + direction[quarter][t][1] + direction[quarter][4][1]] = 9
                         # Danh dau o 11 va 13 neu bi chan o 2
-                        else:                    
+                        else:        
+                            # print(curPosY + direction[quarter][t][0] + direction[quarter][3][0], curPosX + direction[quarter][t][1] + direction[quarter][3][1])
+                            # print(curPosY + direction[quarter][t][0] + direction[quarter][4][0], curPosX + direction[quarter][t][1] + direction[quarter][4][1])            
                             map[curPosY + direction[quarter][t][0] + direction[quarter][3][0]][curPosX + direction[quarter][t][1] + direction[quarter][3][1]] = 9
                             map[curPosY + direction[quarter][t][0] + direction[quarter][4][0]][curPosX + direction[quarter][t][1] + direction[quarter][4][1]] = 9
                     # Dung ngay khi gap o bi chan
