@@ -1,6 +1,6 @@
-from readMaze import is_not_wall, vision_logic, print_maze
+from readMaze import is_not_wall
 import copy
-from Support import PriorityQueue
+from Support import PriorityQueue, logic_vision
 import time # for debugging purposes
 
 # 1 for wall
@@ -132,7 +132,7 @@ class Seeker:
             current = frontier.pop()
             current_pos = current.get_current_pos(3)
             # print("Current position: ", current_pos)
-            visible_cells = vision_logic(current.map, current_pos, current.vision_range, map_dimensions)
+            visible_cells = logic_vision(current.map, current.vision_range, current_pos[0], current_pos[1], map_dimensions[0], map_dimensions[1])
             for cell in visible_cells:
                 if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
                     current.map[cell[0]][cell[1]] = 4
@@ -163,7 +163,7 @@ class Seeker:
             if current.reached_hider(hider_pos):
                 return current
             current_pos = current.get_current_pos(3)
-            visible_cells = vision_logic(current.map, current_pos, current.vision_range, map_dimensions)
+            visible_cells = logic_vision(current.map, current.vision_range, current_pos[0], current_pos[1], map_dimensions[0], map_dimensions[1])
             for cell in visible_cells:
                 if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
                     current.map[cell[0]][cell[1]] = 4
