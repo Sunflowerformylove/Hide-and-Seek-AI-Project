@@ -1,30 +1,22 @@
-from Support import *
+from readMaze import read_maze, print_maze
 from Seeker import *
-import copy
+from readMaze import unobservable_cells
 
-maze = []
-file = open("maze.txt", "r")
-for line in file:
-    temp = []
-    for char in line:
-        if char != "\n" and char != " ":
-            temp.append(int(char))
-    maze.append(temp)
-    
-def print_maze(maze):
-    for row in maze:
-        for cell in row:
-            print(cell, end = " ")
-        print()
+MAP_DIMENSIONS = (8,11)
 
-seeker = Seeker(maze, 3, 0, None)
-# vision = logic_vision(maze, 3, seeker.current_pos[0], seeker.current_pos[1], len(maze), len(maze[0]))
+maze = read_maze("maze.txt")
+unobserved = unobservable_cells(maze, (0,5), 3, MAP_DIMENSIONS)
+print(unobserved)
+vision = vision_logic(maze, (0, 5), 3, MAP_DIMENSIONS)
+for row in vision:
+    if maze[row[0]][row[1]] == 0:
+        maze[row[0]][row[1]] = 4
+print_maze(maze)
+# print(len(maze), len(maze[0]))
+# seeker = Seeker(maze, 3, 0, None)
+# path1 = seeker.move((len(maze), len(maze[0])))
+# path2 = seeker.trace_hider(MAP_DIMENSIONS, (0,10), path1[0])
+# path = backtrace(path2)
 
-# print_maze(maze)
-(move_result, hider_pos)= seeker.move((8,11))
-trace = seeker.trace_hider((8,11), hider_pos, move_result)
-path2 = backtrace(trace)
-
-for node, heu in path2:
-    print_maze(node)
-    print()
+# for node in path:
+#     print_maze(node)

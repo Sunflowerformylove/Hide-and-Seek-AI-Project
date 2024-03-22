@@ -1,5 +1,7 @@
-from Support import *
+from readMaze import is_not_wall, vision_logic, print_maze
 import copy
+from Support import PriorityQueue
+import time # for debugging purposes
 
 # 1 for wall
 # 2 for hider
@@ -24,7 +26,7 @@ def swap(map: list[list[int]], pos1: tuple[int, int], pos2: tuple[int, int]) -> 
 
 class Seeker:
     def __init__(self, map: list[list[int]], vision_range: int, path_cost: int, parent: "Seeker") -> None:
-        self.map = map
+        self.map: list[list[int]] = map
         self.vision_range = vision_range
         self.center = self.get_map_center()
         self.current_pos = self.get_current_pos(3)
@@ -129,14 +131,16 @@ class Seeker:
         while not frontier.empty():
             current = frontier.pop()
             current_pos = current.get_current_pos(3)
-            visible_cells = logic_vision(current.map, current.vision_range,
-                                         current_pos[0], current_pos[1], map_dimensions[0], map_dimensions[1])
+            # print("Current position: ", current_pos)
+            visible_cells = vision_logic(current.map, current_pos, current.vision_range, map_dimensions)
             for cell in visible_cells:
                 if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
                     current.map[cell[0]][cell[1]] = 4
                 elif current.map[cell[0]][cell[1]] == 2:
                     hiders_pos.append((cell[0], cell[1]))
-                    return (current, cell)
+                    return (current, hiders_pos)
+            # print_maze(current.map)
+            # time.sleep(2)
             successors = current.generation(map_dimensions)
             for successor in successors:
                 successor_tuple_map = tuple(map(tuple, successor.map))
@@ -159,8 +163,7 @@ class Seeker:
             if current.reached_hider(hider_pos):
                 return current
             current_pos = current.get_current_pos(3)
-            visible_cells = logic_vision(current.map, current.vision_range,
-                                         current_pos[0], current_pos[1], map_dimensions[0], map_dimensions[1])
+            visible_cells = vision_logic(current.map, current_pos, current.vision_range, map_dimensions)
             for cell in visible_cells:
                 if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
                     current.map[cell[0]][cell[1]] = 4

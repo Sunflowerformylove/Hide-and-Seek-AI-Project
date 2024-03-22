@@ -1,11 +1,10 @@
 import pygame
 from Seeker import *
-from Support import *
 
 WIDTH, HEIGHT = 1280, 720
 CELL_SIZE = 50
-MAP_DIMENSIONS = (8, 11)
 PAUSE = False
+MAP_DIMENSIONS = (8, 11)
 
 # Initialize pygame and screen
 pygame.init()
@@ -16,6 +15,8 @@ running = True
 def read_maze(filename: str) -> list[list[int]]:
     maze = []
     file = open(filename, "r")
+    line = file.readline().split()
+    # MAP_DIMENSIONS = (int(line[0]), int(line[1]))
     for line in file:
         temp = []
         for char in line:
@@ -65,22 +66,20 @@ def show_maze(maze: list[list[int]]) -> None:
                 pygame.draw.rect(screen, (2, 1, 10), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)
 
 maze = read_maze("maze.txt")
-seeker = Seeker(maze, 3, 0, None)
-(move_result, hider_pos)= seeker.move(MAP_DIMENSIONS)
-path1 = backtrace(move_result)
-trace = seeker.trace_hider(MAP_DIMENSIONS, hider_pos, move_result)
-path2 = backtrace(trace)
-screen.fill("white")
-pygame.display.flip()
-for node in path2:
-    pause_frame()
-    pygame.display.flip()
-    show_maze(node)
-    pygame.display.flip()
-    clock.tick(2)
 
-for event in pygame.event.get():
-    if event.type == pygame.QUIT:
-        running = False
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    seeker = Seeker(maze, 3, 0, None)
+    (move_result, hiders) = seeker.move(MAP_DIMENSIONS)
+    move_result = seeker.trace_hider(MAP_DIMENSIONS, hiders[0], move_result)
+    path = backtrace(move_result)
+    for node in path:
+        screen.fill((255, 255, 255))
+        show_maze(node)
+        pygame.display.flip()
+        pause_frame()
+        clock.tick(1)
 
 pygame.quit()

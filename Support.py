@@ -2,11 +2,6 @@ from copy import deepcopy
 import heapq
 import math
 
-# Calculate Manhattan distance between 2 cells
-def manhattanDist(row1, col1, row2, col2):
-    dist = math.fabs(row2 - row1) + math.fabs(col2 - col1)
-    return (int)(dist)
-
 class PriorityQueue:
     def __init__(self):
         self.elements = []
