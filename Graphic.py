@@ -74,7 +74,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     seeker = Seeker(maze, 3, 0, None)
-    hiders = 2
+    hiders = 3
     path = None
     while hiders > 0:
         path = seeker.move(MAP_DIMENSIONS)
@@ -90,6 +90,6 @@ while running:
         show_maze(node)
         pygame.display.flip()
         pause_frame()
-        clock.tick(10)
+        clock.tick(3)
 
 pygame.quit()
