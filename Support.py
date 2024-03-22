@@ -77,9 +77,10 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
         if rad == 3:
             for k in range(2):
                 if curPosY + direction[quarter][3+k][0] >= 0 and curPosY + direction[quarter][3+k][0] <= N-1 and curPosX + direction[quarter][3+k][1] <= M-1 and curPosX + direction[quarter][3+k][1] >= 0:
-                    res.append((curPosY + direction[quarter][3+k][0], curPosX + direction[quarter][3+k][1]))
-                    if map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 1:
-                        # Neu o 5 (hoac o 7) khong bi chan, kiem tra o 10, 11 (hoac 13, 14) co nam trong bang va co bi chan boi cac o truoc khong
+                    # Kiem tra o 5 (hoac o 7), neu o 1 va o 2 bi chan => o 5 bi chan (hoac neu o 2 va o 3 bi chan => o 7 bi chan) 
+                    if map[curPosY + direction[quarter][k][0]][curPosX + direction[quarter][k][1]] != 1 and map[curPosY + direction[quarter][k+1][0]][curPosX + direction[quarter][k+1][1]] != 1 and map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 1:
+                        res.append((curPosY + direction[quarter][3+k][0], curPosX + direction[quarter][3+k][1]))
+                        # kiem tra o 10, 11 (hoac 13, 14) co nam trong bang va co bi chan boi cac o truoc khong
                         nextPosY1 = curPosY + direction[quarter][3+k][0] + direction[quarter][0+k][0]
                         nextPosX1 = curPosX + direction[quarter][3+k][1] + direction[quarter][0+k][1]
                         if nextPosY1 >= 0 and nextPosY1 < N and nextPosX1 >= 0 and nextPosX1 < M and map[nextPosY1][nextPosX1] != 9:
@@ -89,8 +90,7 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
                         nextPosX2 = curPosX + direction[quarter][3+k][1] + direction[quarter][1+k][1]
                         if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 9:
                             res.append((nextPosY2, nextPosX2))
-                    else:
-                        res.pop()
+    
     res = list(set(res))
     res.pop(res.index((curPosY, curPosX)))
     return res
