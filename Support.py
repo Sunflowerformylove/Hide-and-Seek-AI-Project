@@ -30,12 +30,16 @@ class Node:
                     self.heuristic += 1 #total number of observed cells
         return self.heuristic
 
-# Funtion to return list of distinct cells that an agent can observe
-# curPosY: initial row of the agent
-# curPosX: initial column of the agent
 def is_not_wall(map, posY, posX):
     return map[posY][posX] != 1
 
+# Function to check if a position in range of the 2D array
+def pos_in_range(pos, N, M):
+    return (pos[0] >= 0 and pos[0] < N and pos[1] >= 0 and pos[1] < M)
+
+# Funtion to return list of distinct cells that an agent can observe
+# curPosY: initial row of the agent
+# curPosX: initial column of the agent
 def logic_vision(realMap, rad, curPosY, curPosX, N, M):
     map = deepcopy(realMap)
     res = []
@@ -55,39 +59,45 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
                 res.append((curPosY + i*direction[quarter][t][0], curPosX + i*direction[quarter][t][1]))     
                 if map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 1:
                     res.pop()
-                    if i == 1 and rad == 3:
-                        # Danh dau o 10 neu bi chan o 1
-                        if t == 0: 
-                            map[curPosY + direction[quarter][t][0] + direction[quarter][3][0]][curPosX + direction[quarter][t][1] + direction[quarter][3][1]] = 9
-                        # Danh dau o 14 neu bi chan o 3
-                        elif t == 2: 
-                            map[curPosY + direction[quarter][t][0] + direction[quarter][4][0]][curPosX + direction[quarter][t][1] + direction[quarter][4][1]] = 9
-                        # Danh dau o 11 va 13 neu bi chan o 2
-                        else:        
-                            # print(curPosY + direction[quarter][t][0] + direction[quarter][3][0], curPosX + direction[quarter][t][1] + direction[quarter][3][1])
-                            # print(curPosY + direction[quarter][t][0] + direction[quarter][4][0], curPosX + direction[quarter][t][1] + direction[quarter][4][1])            
-                            map[curPosY + direction[quarter][t][0] + direction[quarter][3][0]][curPosX + direction[quarter][t][1] + direction[quarter][3][1]] = 9
-                            map[curPosY + direction[quarter][t][0] + direction[quarter][4][0]][curPosX + direction[quarter][t][1] + direction[quarter][4][1]] = 9
+                    nextPos1 = [curPosY + direction[quarter][t][0] + direction[quarter][3][0], curPosX + direction[quarter][t][1] + direction[quarter][3][1]]
+                    nextPos2 = [curPosY + direction[quarter][t][0] + direction[quarter][4][0], curPosX + direction[quarter][t][1] + direction[quarter][4][1]]
+                    # Danh dau o 10 neu bi chan o 1
+                    if t == 0 and pos_in_range(nextPos1, N, M): 
+                        map[nextPos1[0]][nextPos1[1]] = 1
+                    # Danh dau o 14 neu bi chan o 3
+                    elif t == 2 and pos_in_range(nextPos2, N, M): 
+                        map[nextPos2[0]][nextPos2[1]] = 1
+                    # Danh dau o 11 va 13 neu bi chan o 2
+                    elif t == 1 and pos_in_range(nextPos1, N, M) and pos_in_range(nextPos2, N, M):        
+                        map[nextPos1[0]][nextPos1[1]] = 1
+                        map[nextPos2[0]][nextPos2[1]] = 1
                     # Dung ngay khi gap o bi chan
                     break
-        # Kiem tra neu o 5, o 7 bi chan
-        if rad == 3:
-            for k in range(2):
-                if curPosY + direction[quarter][3+k][0] >= 0 and curPosY + direction[quarter][3+k][0] <= N-1 and curPosX + direction[quarter][3+k][1] <= M-1 and curPosX + direction[quarter][3+k][1] >= 0:
-                    # Kiem tra o 5 (hoac o 7), neu o 1 va o 2 bi chan => o 5 bi chan (hoac neu o 2 va o 3 bi chan => o 7 bi chan) 
-                    if map[curPosY + direction[quarter][k][0]][curPosX + direction[quarter][k][1]] != 1 and map[curPosY + direction[quarter][k+1][0]][curPosX + direction[quarter][k+1][1]] != 1 and map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 1:
-                        res.append((curPosY + direction[quarter][3+k][0], curPosX + direction[quarter][3+k][1]))
-                        # kiem tra o 10, 11 (hoac 13, 14) co nam trong bang va co bi chan boi cac o truoc khong
-                        nextPosY1 = curPosY + direction[quarter][3+k][0] + direction[quarter][0+k][0]
-                        nextPosX1 = curPosX + direction[quarter][3+k][1] + direction[quarter][0+k][1]
-                        if nextPosY1 >= 0 and nextPosY1 < N and nextPosX1 >= 0 and nextPosX1 < M and map[nextPosY1][nextPosX1] != 9:
-                            res.append((nextPosY1, nextPosX1))
-                        
-                        nextPosY2 = curPosY + direction[quarter][3+k][0] + direction[quarter][1+k][0]
-                        nextPosX2 = curPosX + direction[quarter][3+k][1] + direction[quarter][1+k][1]
-                        if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 9:
-                            res.append((nextPosY2, nextPosX2))
-    
+
+        for k in range(2):
+            current_pos = [curPosY + direction[quarter][3+k][0], curPosX + direction[quarter][3+k][1]]
+            if pos_in_range(current_pos, N, M) == False:
+                break
+            queue = []
+            queue.append(current_pos)
+            cnt = sum(range(rad))
+            while len(queue) != 0 and cnt > 0:
+                cnt -= 1
+                current = queue.pop(0)
+                nextPos1 = [current[0] + direction[quarter][0+k][0], current[1] + direction[quarter][0+k][1]]
+                if pos_in_range(nextPos1, N, M): queue.append(nextPos1)
+
+                nextPos2 = [current[0] + direction[quarter][1+k][0], current[1] + direction[quarter][1+k][1]]
+                if pos_in_range(nextPos2, N, M): queue.append(nextPos2)
+
+                if map[current[0]][current[1]] != 1:
+                    res.append((current[0], current[1]))
+                else:
+                    if pos_in_range(nextPos1, N, M):
+                        map[nextPos1[0]][nextPos1[1]] = 1
+                    if pos_in_range(nextPos2, N, M):
+                        map[nextPos2[0]][nextPos2[1]] = 1
+                    
     res = list(set(res))
     res.pop(res.index((curPosY, curPosX)))
     return res
