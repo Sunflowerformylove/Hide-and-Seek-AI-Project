@@ -65,7 +65,7 @@ def show_maze(maze: list[list[int]]) -> None:
             else:
                 pygame.draw.rect(screen, (2, 1, 10), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)
 
-maze = read_maze("maze.txt")
+maze = read_maze("maze1.txt")
 
 while running:
     for event in pygame.event.get():

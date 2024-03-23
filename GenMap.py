@@ -80,7 +80,7 @@ def create_discrete_walls(map: list[list[int]], N: int, M: int) -> None:
                 cnt_walls += 1
 
 
-def create_L_walls(map: list[list[int]], N: int, M: int) -> None:
+def create_L_walls(map: list[list[int]], N: int, M: int) -> None: # lỗi chặn đường đi + diagonal walls
     horizontal_axis = N // 2
     vertical_axis = M // 2
     max_walls = 4
@@ -134,7 +134,7 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None:
                             map[i][y] = 1
                 cnt_walls += 1
                 is_1st_zone = True
-            elif x < horizontal_axis and y >= vertical_axis and is_2nd_zone == False: # second zone
+            elif x < horizontal_axis and y > vertical_axis and is_2nd_zone == False: # second zone
                 direction = randint(0, 1)
                 # 0: cạnh dài chĩa xuống
                 if direction == 0:
@@ -173,7 +173,7 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None:
                             map[i][y] = 1
                 cnt_walls += 1
                 is_2nd_zone = True
-            elif x >= horizontal_axis and y < vertical_axis and is_3rd_zone == False: # third zone
+            elif x > horizontal_axis and y < vertical_axis and is_3rd_zone == False: # third zone
                 direction = randint(0, 1)
                 # 0: cạnh dài chĩa lên
                 if direction == 0:
@@ -212,7 +212,7 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None:
                             map[i][y] = 1
                 cnt_walls += 1
                 is_3rd_zone = True
-            elif x >= horizontal_axis and y >= vertical_axis and is_4th_zone == False: # fourth zone
+            elif x > horizontal_axis and y > vertical_axis and is_4th_zone == False: # fourth zone
                 direction = randint(0, 1)
                 # 0: cạnh dài chĩa lên
                 if direction == 0:
@@ -254,4 +254,4 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None:
 
 
 new_map = gen_map(10, 20)
-export_map(new_map, "maze4.txt")
+export_map(new_map, "maze5.txt")
