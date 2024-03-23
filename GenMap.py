@@ -16,14 +16,35 @@ def export_map(map: list[list[int]], file: str) -> None:
     f.close()
 
 
+def check_diagonal_wall(map: list[list[int]], N: int , M: int, x: int, y: int) -> bool:
+    if x == 0:
+        if y == 0:
+            return map[x+1][y+1] == 1
+        elif y == M - 1:
+            return map[x+1][y-1] == 1
+        else:
+            return map[x+1][y-1] == 1 or map[x+1][y+1] == 1
+    elif x == N - 1:
+        if y == 0:
+            return map[x-1][y+1] == 1
+        elif y == M - 1:
+            return map[x-1][y-1] == 1
+        else:
+            return map[x-1][y-1] == 1 or map[x-1][y+1] == 1
+    else:
+        if y == 0:
+            return map[x-1][y+1] == 1 or map[x+1][y+1] == 1
+        elif y == M - 1:
+            return map[x-1][y-1] == 1 or map[x+1][y-1] == 1
+        else:
+            return map[x-1][y-1] == 1 or map[x-1][y+1] == 1 or map[x+1][y-1] == 1 or map[x+1][y+1] == 1
+
+
 def gen_map(N: int, M: int) -> list[list[int]]: # N is row, M is column
     map = [[0 for i in range(M)] for j in range(N)]
-    for i in range(N):
-        for j in range(M):
-            if i == 0 or i == N-1 or j == 0 or j == M-1: # map must be covered by walls
-                map[i][j] = 1
-    map[N -2][1] = 3 # seeker
-    map[1][M - 2] = 2 # hider
+
+    map[N -1][0] = 3 # seeker
+    map[0][M - 1] = 2 # hider
     
     type_map = randint(0, 3)
     # 0: discrete walls
@@ -32,7 +53,7 @@ def gen_map(N: int, M: int) -> list[list[int]]: # N is row, M is column
     # 3: square-triangle walls
 
     # type_map = 0
-    type_map = 2
+    type_map = 0
     if type_map == 0:
         create_discrete_walls(map, N, M)
     # elif type_map == 1:
@@ -46,31 +67,21 @@ def gen_map(N: int, M: int) -> list[list[int]]: # N is row, M is column
 
 
 def create_discrete_walls(map: list[list[int]], N: int, M: int) -> None:
-    num_walls = (N - 2) * (M - 2) // 10 + randint(1,2)
+    num_walls = N*M // 10 + randint(1,2)
     cnt_walls = 0
-    max_continous_walls = 2
+    max_continous_walls = (N+M) // 10
     cnt_continous_walls = 0
 
     while cnt_walls < num_walls:
-        x = randint(1, N-2)
-        y = randint(1, M-2)
+        x = randint(0, N-1)
+        y = randint(0, M-1)
 
         if map[x][y] == 0:
             # to avoid creating diagonal walls
-            if x == 1:
-                if map[x+1][y-1] == 1 or map[x+1][y+1] == 1:
-                    continue
-            elif x == N-2:
-                if map[x-1][y-1] == 1 or map[x-1][y+1] == 1:
-                    continue
-            if y == 1:
-                if map[x-1][y+1] == 1 or map[x+1][y+1] == 1:
-                    continue
-            elif y == M-2:
-                if map[x-1][y-1] == 1 or map[x+1][y-1] == 1:
-                    continue
+            if check_diagonal_wall(map, N, M, x, y):
+                continue
             
-            if (map[x-1][y] == 1 and x != 1) or (map[x+1][y] == 1 and x != N-2) or (map[x][y-1] == 1 and y != 1) or (map[x][y+1] == 1 and y != M-2):
+            if (x != 0 and map[x-1][y] == 1 ) or (x != N-1 and map[x+1][y] == 1) or (y != 0 and map[x][y-1] == 1) or (y != M-1 and map[x][y+1] == 1):
                 if cnt_continous_walls < max_continous_walls:
                     map[x][y] = 1
                     cnt_walls += 1
@@ -254,4 +265,4 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None: # lỗi chă�
 
 
 new_map = gen_map(10, 20)
-export_map(new_map, "maze5.txt")
+export_map(new_map, "maze7.txt")
