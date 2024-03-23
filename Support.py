@@ -78,6 +78,9 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
             current_pos = [curPosY + direction[quarter][3+k][0], curPosX + direction[quarter][3+k][1]]
             if pos_in_range(current_pos, N, M) == False:
                 break
+            pos1 = [curPosY + direction[quarter][k][0], curPosX + direction[quarter][k][1]]
+            pos2 = [curPosY + direction[quarter][k+1][0], curPosX + direction[quarter][k+1][1]]
+            if map[pos1[0]][pos1[1]] == 1 and map[pos2[0]][pos2[1]] == 1: map[current_pos[0]][current_pos[1]] = 1
             queue = []
             queue.append(current_pos)
             cnt = sum(range(rad))
