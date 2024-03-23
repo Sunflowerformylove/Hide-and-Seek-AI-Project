@@ -1,7 +1,9 @@
-from readMaze import is_not_wall
 import copy
-from Support import PriorityQueue, logic_vision
+from Support import PriorityQueue
 import time # for debugging purposes
+from readMaze import vision_logic
+from Support import logic_vision
+from readMaze import print_maze
 
 # 1 for wall
 # 2 for hider
@@ -12,6 +14,9 @@ import time # for debugging purposes
 # 6 for announced cell
 # 7 for vision blocked cell
 
+
+def is_not_wall(map: list[list[int]], posY: int, posX: int) -> bool:
+    return map[posY][posX] != 1
 
 def swap(map: list[list[int]], pos1: tuple[int, int], pos2: tuple[int, int]) -> None:
     if map[pos1[0]][pos1[1]] == 3 and map[pos2[0]][pos2[1]] == 2:
@@ -118,10 +123,20 @@ class Seeker:
             abs(self.current_pos[1] - goalY)
         self.heuristic = heuristic
         
+    def calculate_heuristic_euclidean(self, goalX, goalY) -> int:
+        heuristic = ((self.current_pos[0] - goalX) ** 2 + (self.current_pos[1] - goalY) ** 2) ** 0.5
+        self.heuristic = heuristic
+        
     def format_map_by_vision(self, vision: list[tuple]) -> list[list[int]]:
         for cell in vision:
-            if self.map[cell[0]][cell[1]] != 2 and self.map[cell[0]][cell[1]] != 3 and self.map[cell[0]][cell[1]] != 1:
+            if self.map[cell[0]][cell[1]] != 3 and self.map[cell[0]][cell[1]] != 1:
                 self.map[cell[0]][cell[1]] = 4
+                
+    def has_hider(self, vision) -> bool:
+        for cell in vision:
+            if self.map[cell[0]][cell[1]] == 2:
+                return True
+        return False
 
     def move(self, map_dimensions: tuple[int, int]) -> bool:
         frontier = PriorityQueue()
@@ -131,15 +146,15 @@ class Seeker:
         while not frontier.empty():
             current = frontier.pop()
             current_pos = current.get_current_pos(3)
-            # print("Current position: ", current_pos)
             visible_cells = logic_vision(current.map, current.vision_range, current_pos[0], current_pos[1], map_dimensions[0], map_dimensions[1])
-            for cell in visible_cells:
-                if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
-                    current.map[cell[0]][cell[1]] = 4
-                elif current.map[cell[0]][cell[1]] == 2:
-                    hiders_pos.append((cell[0], cell[1]))
-                    return (current, hiders_pos)
-            # print_maze(current.map)
+            # visible_cells = vision_logic(current.map, current_pos, current.vision_range, map_dimensions)
+            if current.has_hider(visible_cells):
+                for cell in visible_cells:
+                    if current.map[cell[0]][cell[1]] == 2:
+                        hiders_pos.append((cell[0], cell[1]))
+                return (current, hiders_pos)
+            else:
+                current.format_map_by_vision(visible_cells)
             # time.sleep(2)
             successors = current.generation(map_dimensions)
             for successor in successors:
@@ -154,16 +169,23 @@ class Seeker:
     def reached_hider(self, hider_pos: tuple[int, int]) -> bool:
         return self.current_pos == hider_pos
 
-    def trace_hider(self, map_dimensions: tuple[int, int], hider_pos: tuple[int, int], last_node: "Seeker") -> list[list[int]]:
+    def trace_hider(self, map_dimensions: tuple[int, int], hider_pos: tuple[int, int], last_node: "Seeker",
+                    num_hiders: int = 1
+                    ) -> list[list[int]]:
         frontier = PriorityQueue()
-        frontier.push(last_node, last_node.calculate_heuristic_manhattan(hider_pos[0], hider_pos[1]))
+        # frontier.push(last_node, last_node.calculate_heuristic_manhattan(hider_pos[0][0], hider_pos[0][1]))
+        frontier.push(last_node, last_node.calculate_heuristic_euclidean(hider_pos[0][0], hider_pos[0][1]))
         visited = {tuple(map(tuple, self.map)): 0}
         while not frontier.empty():
             current = frontier.pop()
-            if current.reached_hider(hider_pos):
-                return current
+            if current.reached_hider(hider_pos[0]):
+                num_hiders -= 1
+                hider_pos.pop(0)
+                if num_hiders == 0:
+                    return current
             current_pos = current.get_current_pos(3)
             visible_cells = logic_vision(current.map, current.vision_range, current_pos[0], current_pos[1], map_dimensions[0], map_dimensions[1])
+            # visible_cells = vision_logic(current.map, current_pos, current.vision_range, map_dimensions)
             for cell in visible_cells:
                 if current.map[cell[0]][cell[1]] != 2 and current.map[cell[0]][cell[1]] != 3 and current.map[cell[0]][cell[1]] != 1:
                     current.map[cell[0]][cell[1]] = 4
@@ -172,8 +194,8 @@ class Seeker:
                 successor_tuple_map = tuple(map(tuple, successor.map))
                 if successor_tuple_map not in visited or visited[successor_tuple_map] > successor.path_cost:
                     visited[successor_tuple_map] = successor.path_cost
-                    successor.calculate_heuristic_manhattan(
-                        hider_pos[0], hider_pos[1])
+                    # successor.calculate_heuristic_manhattan(hider_pos[0][0], hider_pos[0][1])
+                    successor.calculate_heuristic_euclidean(hider_pos[0][0], hider_pos[0][1])
                     frontier.push(
                         successor, successor.path_cost + successor.heuristic)
 

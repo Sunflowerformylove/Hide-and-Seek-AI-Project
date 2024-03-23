@@ -4,7 +4,6 @@ from Seeker import *
 WIDTH, HEIGHT = 1280, 720
 CELL_SIZE = 50
 PAUSE = False
-MAP_DIMENSIONS = (8, 11)
 
 # Initialize pygame and screen
 pygame.init()
@@ -16,14 +15,14 @@ def read_maze(filename: str) -> list[list[int]]:
     maze = []
     file = open(filename, "r")
     line = file.readline().split()
-    # MAP_DIMENSIONS = (int(line[0]), int(line[1]))
+    map_dimensions = [int(line[0]), int(line[1])]
     for line in file:
         temp = []
         for char in line:
             if char != "\n" and char != " ":
                 temp.append(int(char))
         maze.append(temp)
-    return maze
+    return (maze, map_dimensions)
 
 def toggle_pause() -> None:
     global PAUSE
@@ -65,21 +64,32 @@ def show_maze(maze: list[list[int]]) -> None:
             else:
                 pygame.draw.rect(screen, (2, 1, 10), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)
 
-maze = read_maze("maze1.txt")
+maze, MAP_DIMENSIONS = read_maze("maze1.txt")
+
+# print_maze(maze)
+# print(MAP_DIMENSIONS)
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
     seeker = Seeker(maze, 3, 0, None)
-    (move_result, hiders) = seeker.move(MAP_DIMENSIONS)
-    move_result = seeker.trace_hider(MAP_DIMENSIONS, hiders[0], move_result)
-    path = backtrace(move_result)
+    hiders = 3
+    path = None
+    while hiders > 0:
+        path = seeker.move(MAP_DIMENSIONS)
+        path = seeker.trace_hider(MAP_DIMENSIONS, path[1], path[0], len(path[1]))
+        maze = path.map
+        path = backtrace(path)
+        hiders -= 1
+    # move_result = seeker.move(MAP_DIMENSIONS)
+    # move_result = seeker.trace_hider(MAP_DIMENSIONS, move_result[1], move_result[0], len(move_result[1]))
+    # path = backtrace(move_result)
     for node in path:
         screen.fill((255, 255, 255))
         show_maze(node)
         pygame.display.flip()
         pause_frame()
-        clock.tick(1)
+        clock.tick(3)
 
 pygame.quit()
