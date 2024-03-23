@@ -40,12 +40,74 @@ def check_diagonal_wall(map: list[list[int]], N: int , M: int, x: int, y: int) -
             return map[x-1][y-1] == 1 or map[x-1][y+1] == 1 or map[x+1][y-1] == 1 or map[x+1][y+1] == 1
 
 
-def gen_map(N: int, M: int) -> list[list[int]]: # N is row, M is column
-    map = [[0 for i in range(M)] for j in range(N)]
+def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, num_hiders: int) -> None:
+    cnt_hiders = 0
+    cnt_seeker = 0
+    is_zone1 = False
+    is_zone2 = False
+    is_zone3 = False
+    is_zone4 = False
 
-    map[N -1][0] = 3 # seeker
-    map[0][M - 1] = 2 # hider
-    
+    # generate hiders positions
+    while cnt_hiders < num_hiders:
+        zone = randint(1, 4)
+        if zone == 1:
+            x = randint(0, N//2 - 1)
+            y = randint(0, M//2 - 1)
+            if map[x][y] == 0:
+                map[x][y] = 2
+                cnt_hiders += 1
+                is_zone1 = True
+        elif zone == 2:
+            x = randint(0, N//2 - 1)
+            y = randint(M//2 + 1, M-1)
+            if map[x][y] == 0:
+                map[x][y] = 2
+                cnt_hiders += 1
+                is_zone2 = True
+        elif zone == 3:
+            x = randint(N//2 + 1, N-1)
+            y = randint(0, M//2 - 1)
+            if map[x][y] == 0:
+                map[x][y] = 2
+                cnt_hiders += 1
+                is_zone3 = True
+        else:
+            x = randint(N//2 + 1, N-1)
+            y = randint(M//2 + 1, M-1)
+            if map[x][y] == 0:
+                map[x][y] = 2
+                cnt_hiders += 1
+                is_zone4 = True
+
+    # generate seeker position
+    while cnt_seeker < 1:
+        if is_zone1 == False: # seeker will be in zone 1 of zone 1
+            x = randint(0, N//4 - 1)
+            y = randint(0, M//4 - 1)
+        elif is_zone2 == False: # seeker will be in zone 2 of zone 2
+            x = randint(0, N//4 - 1)
+            y = randint(3*M//4 + 1, M-1)
+        elif is_zone3 == False: # seeker will be in zone 3 of zone 3
+            x = randint(3*N//4 + 1, N-1)
+            y = randint(0, M//4 - 1)
+        elif is_zone4 == False: # seeker will be in zone 4 of zone 4
+            x = randint(3*N//4 + 1, N-1)
+            y = randint(3*M//4 + 1, M-1)
+        else: # if all zones have hiders then hider must be in the center of the map
+            x = N // 2
+            y = M // 2
+            while map[x][y] != 0:
+                x += randint(-1, 1)
+                y += randint(-1, 1)
+
+        if map[x][y] == 0:
+            map[x][y] = 3
+            cnt_seeker += 1
+
+
+def generate_map(N: int, M: int, num_hiders: int) -> list[list[int]]: # N is row, M is column
+    map = [[0 for i in range(M)] for j in range(N)]
     type_map = randint(0, 3)
     # 0: discrete walls
     # 1: rectangle walls
@@ -62,6 +124,8 @@ def gen_map(N: int, M: int) -> list[list[int]]: # N is row, M is column
         create_L_walls(map, N, M) # CÒN NHIỀU BUGS LẮM ;)
     # else:
     #     create_square_triangle_walls(map, N, M)
+
+    generate_hider_and_seeker_positions(map, N, M, num_hiders)
 
     return map
 
@@ -264,5 +328,5 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None: # lỗi chă�
                 is_4th_zone = True
 
 
-new_map = gen_map(10, 20)
-export_map(new_map, "maze7.txt")
+new_map = generate_map(10, 20, 4)
+export_map(new_map, "maze10.txt")
