@@ -92,8 +92,3 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
     res = list(set(res))
     res.pop(res.index((curPosY, curPosX)))
     return res
-
-# map = [[0]*9 for i in range(9)]
-# visions = logic_vision(map, 3, 4, 6, 9, 9)
-# for i in range(len(visions)): map[visions[i][0]][visions[i][1]] = 5
-# for i in range(9): print(map[i])

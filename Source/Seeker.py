@@ -20,6 +20,9 @@ def swap(maze: list[list[int]], a: tuple[int, int], b: tuple[int, int]):
         maze[a[0]][a[1]] = 0
     else:
         maze[a[0]][a[1]], maze[b[0]][b[1]] = maze[b[0]][b[1]], maze[a[0]][a[1]]
+        
+def calculate_heuristic_euclidean_wr(current: tuple[int, int], hider: tuple[int, int]) -> int:
+    return ((current[0] - hider[0]) ** 2 + (current[1] - hider[1]) ** 2) ** 0.5
 
 
 class Seeker:
@@ -185,7 +188,7 @@ class Seeker:
             if successor_tuple_map not in visited or visited[tuple(map(successor.map))] < successor.heuristic:
                 frontier.push(successor, successor.heuristic)
         next_move = frontier.pop()
-        swap(map, self.current_pos, next_move.current_pos)
+        swap(maze, self.current_pos, next_move.current_pos)
         return next_move
     
     def clone(self):
@@ -206,8 +209,6 @@ class Seeker:
         visited = dict()
         while not frontier.empty():
             current = frontier.pop()
-            # print_maze(current.map)
-            # time.sleep(1)
             if current.current_pos == chosen_pos:
                 return backtrace(current)
             successors = current.generate(maze, map_dimensions)
@@ -222,9 +223,14 @@ class Seeker:
     
     def hider_in_vicinity(self, map: list[list[int]], map_dimensions: tuple[int, int]):
         vision = logic_vision(map, 3, self.current_pos[0], self.current_pos[1], map_dimensions[0], map_dimensions[1])
+        nearest = (float("inf"), ())
         for cell in vision:
             if map[cell[0]][cell[1]] == 2:
-                return (True, cell)
+                distance = calculate_heuristic_euclidean_wr(self.current_pos, cell)
+                if distance < nearest[0]:
+                    nearest = (distance, cell)
+        if nearest[1] != ():
+            return (True, nearest[1])
         return (False, ())
     
     def caught_hider(self, list_hiders: list[Hider]):
