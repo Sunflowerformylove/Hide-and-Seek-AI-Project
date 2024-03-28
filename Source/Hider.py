@@ -102,5 +102,8 @@ class Hider:
                     successor.calculate_heuristic_manhattan(successor.current_pos, seeker_pos)
                     if best == None or successor.heuristic > best.heuristic:
                         best = successor
-                swap(map, self.current_pos, best.current_pos)
-                return best
+                if best is not None:
+                    swap(map, self.current_pos, best.current_pos)
+                    return best
+                else:
+                    return self.clone()

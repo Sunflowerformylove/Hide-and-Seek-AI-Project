@@ -2,7 +2,7 @@ from random import randint
 
 
 def export_map(map: list[list[int]], file: str) -> None:
-    f = open(file, "w")
+    f = open(file, "w+")
     N = len(map)
     M = len(map[0])
     f.write(str(N) + " " + str(M) + "\n")
@@ -106,7 +106,7 @@ def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, nu
             cnt_seeker += 1
 
 
-def generate_map(N: int, M: int, num_hiders: int) -> list[list[int]]: # N is row, M is column
+def generate_map(N: int, M: int, num_hiders: int, type = 0) -> list[list[int]]: # N is row, M is column
     map = [[0 for i in range(M)] for j in range(N)]
     type_map = randint(0, 3)
     # 0: discrete walls
@@ -115,7 +115,7 @@ def generate_map(N: int, M: int, num_hiders: int) -> list[list[int]]: # N is row
     # 3: square-triangle walls
 
     # type_map = 0
-    type_map = 0
+    type_map = type
     if type_map == 0:
         create_discrete_walls(map, N, M)
     # elif type_map == 1:
@@ -328,5 +328,5 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None: # lỗi chă�
                 is_4th_zone = True
 
 
-new_map = generate_map(10, 20, 4)
-export_map(new_map, "maze10.txt")
+new_map = generate_map(30, 30, 5, 2)
+export_map(new_map, "Tests/maze8.txt")

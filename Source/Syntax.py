@@ -1,1 +1,3 @@
-moves = ["up-left", "up-right", "up", "down-left", "down-right", "down", "left", "right"]
+A = 3
+A = 4
+print(A)
