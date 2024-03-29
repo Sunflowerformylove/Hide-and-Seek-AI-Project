@@ -2,6 +2,7 @@ from Seeker import *
 from readMaze import print_maze, read_maze
 import time
 import pygame
+from Global import *
 from Graphic import *
 
 pygame.init()
@@ -59,7 +60,7 @@ class Game:
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders):
                         SCORE += 20
-                        winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 0, 0))
+                        winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 235, 240))
                         screen.blit(winner, (WIDTH - 10, 10))
                         show_maze(self.maze)
                         pygame.display.flip()
@@ -131,7 +132,7 @@ class Game:
                         num_hiders -= 1
                         SCORE += 20
                         if num_hiders == 0:
-                            winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 0, 0))
+                            winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 235, 240))
                             screen.blit(winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
                             pygame.display.flip()
@@ -207,7 +208,7 @@ class Game:
                         SCORE += 20
                         num_hiders -= 1
                         if num_hiders == 0:
-                            winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 0, 0))
+                            winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 235, 240))
                             screen.blit(winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
                             pygame.display.flip()
@@ -262,12 +263,11 @@ class Game:
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
-            clock.tick(1)
+            clock.tick(10)
             turn = not turn
 
-filename = "Tests/maze.txt"
+filename = "Tests/maze2.txt"
 game = Game(filename)
-print_maze(game.seeker.map)
 while running:
     handle_event()
     game.level_3(len(game.hiders))
