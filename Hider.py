@@ -33,14 +33,17 @@ class Hider:
     
     # Function to randomly announce cell close to current position of Hider, in Hider's vision
     # 6: announced cell
-    def announce(self, visions):
-        if self.announcePos != None: 
-            self.map[self.announcePos[0]][self.announcePos[1]] = 0
-        pos = (random.randint(self.posY-2, self.posY+2), random.randint(self.posX2, self.posX+2))
-        while self.map[pos[0]][pos[1]] == 1 or self.map[pos[0]][pos[1]] == 2 or self.map[pos[0]][pos[1]] == 3:
-            pos = (random.randint(self.posY-2, self.posY+2), random.randint(self.posX2, self.posX+2))
-        self.announcePos = pos
-        self.map[pos[0]][pos[1]] = 6
+    # def announce(self, visions):
+    #     if self.announcePos != None: 
+    #         self.map[self.announcePos[0]][self.announcePos[1]] = 0
+    #     pos = (random.randint(self.posY-2, self.posY+2), random.randint(self.posX2, self.posX+2))
+    #     while self.map[pos[0]][pos[1]] == 1 or self.map[pos[0]][pos[1]] == 2 or self.map[pos[0]][pos[1]] == 3:
+    #         pos = (random.randint(self.posY-2, self.posY+2), random.randint(self.posX2, self.posX+2))
+    #     self.announcePos = pos
+    #     self.map[pos[0]][pos[1]] = 6
+    def announce(self, shared_map):
+        self.announcePos = Anouncement(shared_map, self.N, self.M, (self.posY, self.posX), self)
+        
 
     # Funtion to randomly move the Hider
     def move(self):
@@ -66,3 +69,35 @@ class Hider:
         self.posY = newPos[0]
         self.posX = newPos[1]
         self.map[self.posY][self.posX] = 2  
+
+
+class Anouncement:
+    def __init__(self, shared_map, N, M, hider_pos, hider):
+        self.map = shared_map
+        while True:
+            while True:
+                x = hider_pos[0] + randint(-3,3)
+                if x >= 0 and x < N: 
+                    self.x = x
+                    break
+            while True:
+                y = hider_pos[1] + randint(-3,3)
+                if y >= 0 and y < M: 
+                    self.y = y
+                    break
+            if shared_map[self.x][self.y] != 2 and shared_map[self.x][self.y] != 3:
+                break
+        # if shared_map[self.x][self.y] == 1:
+        #     self.is_wall = True
+        # else:
+        #     self.is_wall = False
+        self.map[self.x][self.y] = 6
+
+    # def is_on_wall(self):
+    #     return self.is_wall
+
+    def destruct(self):
+        if self.is_wall:
+            self.map[self.x][self.y] = 1
+        else:
+            self.map[self.x][self.y] = 0
