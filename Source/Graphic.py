@@ -1,12 +1,9 @@
 import pygame
 from Seeker import *
 from copy import deepcopy
+from Global import *
 
-WIDTH, HEIGHT = 1280, 720
-CELL_SIZE = 20
-PAUSE = False
-mode = "dark"
-
+exec()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
@@ -40,7 +37,9 @@ def show_maze(maze: list[list[int]]) -> None:
                 pygame.draw.rect(screen, (51, 153, 137), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
             elif maze[i][j] == 3: # Imperial red
                 pygame.draw.rect(screen, (229, 56, 59), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            elif maze[i][j] == 4:
-                pygame.draw.rect(screen, (234, 144, 16), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            else:
+            elif maze[i][j] == 4: # Coral
+                pygame.draw.rect(screen, (247, 135, 100), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            elif maze[i][j] == 6: # Ash grey
+                pygame.draw.rect(screen, (157, 180, 171), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            else: # White-ish 
                 pygame.draw.rect(screen, (253, 254, 250), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)
