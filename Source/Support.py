@@ -76,7 +76,7 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
 
         for k in range(2):
             if curPosY + direction[quarter][3+k][0] >= 0 and curPosY + direction[quarter][3+k][0] <= N-1 and curPosX + direction[quarter][3+k][1] <= M-1 and curPosX + direction[quarter][3+k][1] >= 0:                     
-                if map[curPosY + direction[quarter][k][0]][curPosX + direction[quarter][k][1]] != 1 and map[curPosY + direction[quarter][k+1][0]][curPosX + direction[quarter][k+1][1]] != 1 and map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 1:
+                if (map[curPosY + direction[quarter][k][0]][curPosX + direction[quarter][k][1]] != 1 or map[curPosY + direction[quarter][k+1][0]][curPosX + direction[quarter][k+1][1]] != 1) and map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 1:
                     res.append((curPosY + direction[quarter][3+k][0], curPosX + direction[quarter][3+k][1]))
                     if rad > 2:
                         # kiem tra o 10, 11 (hoac 13, 14) co nam trong bang va co bi chan boi cac o truoc khong
@@ -92,8 +92,3 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
     res = list(set(res))
     res.pop(res.index((curPosY, curPosX)))
     return res
-
-map = [[0]*9 for i in range(9)]
-visions = logic_vision(map, 3, 4, 6, 9, 9)
-for i in range(len(visions)): map[visions[i][0]][visions[i][1]] = 5
-for i in range(9): print(map[i])
