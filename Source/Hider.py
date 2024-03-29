@@ -107,3 +107,35 @@ class Hider:
                     return best
                 else:
                     return self.clone()
+
+
+class Anouncement:
+    def __init__(self, shared_map, N, M, hider_pos, hider):
+        self.map = shared_map
+        while True:
+            while True:
+                x = hider_pos[0] + randint(-3,3)
+                if x >= 0 and x < N: 
+                    self.x = x
+                    break
+            while True:
+                y = hider_pos[1] + randint(-3,3)
+                if y >= 0 and y < M: 
+                    self.y = y
+                    break
+            if shared_map[self.x][self.y] != 2 and shared_map[self.x][self.y] != 3:
+                break
+        if shared_map[self.x][self.y] == 1:
+            self.is_wall = True
+        else:
+            self.is_wall = False
+        self.map[self.x][self.y] = 6
+
+    def is_on_wall(self):
+        return self.is_wall
+
+    def destruct(self):
+        if self.is_wall:
+            self.map[self.x][self.y] = 1
+        else:
+            self.map[self.x][self.y] = 0
