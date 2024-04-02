@@ -8,6 +8,7 @@ from Graphic import *
 pygame.init()
 running = True
 SCORE = 0
+RUN = 0
 
 # Idea: Seeker will move first, then hider will move
 # Seeker will explore map according to the highest vision unveiled
@@ -25,12 +26,14 @@ class Game:
         self.maze, self.MAP_DIMENSIONS = read_maze(filename)
         self.seeker = Seeker(self.maze, 0)
         self.hiders = self.set_hiders()
+        self.announcements = self.set_announcements()
         
     def reset_game(self, filename: str):
         global SCORE
         self.maze, self.MAP_DIMENSIONS = read_maze(filename)
         self.seeker = Seeker(self.maze, 0)
         self.hiders = self.set_hiders()
+        self.announcements = self.set_announcements()
         SCORE = 0
         
     def set_hiders(self):
@@ -40,6 +43,12 @@ class Game:
                 if self.maze[i][j] == 2:
                     hiders.append(Hider(self.maze, 0, (i, j)))
         return hiders
+
+    def set_announcements(self):
+        announcements = []
+        for i in range(len(self.hiders)):
+            announcements.append(None)
+        return announcements
     
     def level_1(self):
         global SCORE
@@ -49,6 +58,9 @@ class Game:
         turn = False # Seeker moves first
         random_pos = None
         A_star_res = None
+        prioritized = None
+        A_star_ann = None
+        turn_so_far = 0
         while running:
             if not turn:
                 is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(self.maze, self.MAP_DIMENSIONS)
@@ -58,13 +70,12 @@ class Game:
                         A_star_res = None
                     successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, hider_pos)
                     self.seeker = successor
-                    if self.seeker.caught_hider(self.hiders):
+                    if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         SCORE += 20
                         winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 235, 240))
                         screen.blit(winner, (WIDTH - 10, 10))
                         show_maze(self.maze)
                         pygame.display.flip()
-                        pygame.time.wait(2000)
                         break
                 elif random_pos != None:
                     if A_star_res == None:
@@ -94,9 +105,22 @@ class Game:
                         self.seeker = successor
                 SCORE -= 1
             else:
+                turn_so_far += 1
                 for i in range(len(self.hiders)):
+                    ann_prev_pos = None
+                    if self.announcements[i]:
+                        ann_prev_pos = self.announcements[i].get_pos()
+                    announcement = self.hiders[i].announce(turn_so_far, self.maze, self.MAP_DIMENSIONS)
+                    if announcement:
+                        self.announcements[i] = announcement
+                        ann_pos = announcement.get_pos()
+                        if ann_prev_pos and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
+                            self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
+                        self.maze[ann_pos[0]][ann_pos[1]] = 6
                     move = self.hiders[i].move(self.maze, self.MAP_DIMENSIONS, 1)
                     self.hiders[i] = move
+                if turn_so_far >= 6:
+                    turn_so_far = 0
             screen.fill((0,0,0))
             vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
@@ -107,18 +131,20 @@ class Game:
             turn_text = pygame.font.Font(None, 36).render("Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
             screen.blit(turn_text, (10, 10))
             score_text = pygame.font.Font(None, 36).render("Score: " + str(SCORE), 1, (255, 235, 240))
-            screen.blit(score_text, (WIDTH / 2 - score_text.get_width()), 10)
+            screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
-            clock.tick(20)
+            clock.tick(0)
             turn = not turn
             
     def level_2(self, num_hiders: int):
         global SCORE
+        global RUN
         vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
         turn = False # Seeker moves first
         random_pos = None
         A_star_res = None
+        turn_so_far = 0
         while True:
             if not turn:
                 is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(self.maze, self.MAP_DIMENSIONS)
@@ -127,8 +153,9 @@ class Game:
                         random_pos = None
                         A_star_res = None
                     successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, hider_pos)
+                    # print(successor.map)
                     self.seeker = successor
-                    if self.seeker.caught_hider(self.hiders):
+                    if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         num_hiders -= 1
                         SCORE += 20
                         if num_hiders == 0:
@@ -136,7 +163,6 @@ class Game:
                             screen.blit(winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
                             pygame.display.flip()
-                            pygame.time.wait(1000)
                             break
                 elif random_pos != None:
                     if A_star_res == None:
@@ -151,6 +177,7 @@ class Game:
                         A_star_res.pop(0)
                     else:
                         successor = self.seeker.move_to_pos(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
+                        # successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
                         self.seeker.format_map_by_vision(logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
@@ -166,9 +193,24 @@ class Game:
                         self.seeker = successor
                 SCORE -= 1
             else:
+                turn_so_far += 1
                 for i in range(len(self.hiders)):
+                    ann_prev_pos = None
+                    if self.announcements[i]:
+                        ann_prev_pos = self.announcements[i].get_pos()
+                    announcement = self.hiders[i].announce(turn_so_far, self.maze, self.MAP_DIMENSIONS)
+                    if announcement:
+                        # print("Prev:",ann_prev_pos)
+                        self.announcements[i] = None
+                        self.announcements[i] = announcement
+                        ann_pos = announcement.get_pos()
+                        if ann_prev_pos and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
+                            self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
+                        self.maze[ann_pos[0]][ann_pos[1]] = 6
                     move = self.hiders[i].move(self.maze, self.MAP_DIMENSIONS, 2)
                     self.hiders[i] = move
+                if turn_so_far >= 6:
+                    turn_so_far = 0
             screen.fill((0,0,0))
             vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
@@ -180,9 +222,15 @@ class Game:
             screen.blit(turn_text, (10, 10))
             score_text = pygame.font.Font(None, 36).render("Score: " + str(SCORE), 1, (255, 235, 240))
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
+            run_text = pygame.font.Font(None, 36).render("Run: #" + str(RUN), 1, (255, 235, 240))
+            screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
             show_maze(show_map)
             pygame.display.flip()
-            clock.tick(10)
+            if abs(SCORE) >= 200 or show_map[self.seeker.current_pos[0]][self.seeker.current_pos[1]] == 0:
+                pygame.time.wait(100000)
+                clock.tick(1)
+            else:
+                clock.tick(0)
             turn = not turn
             
     def level_3(self, num_hiders: int):
@@ -192,6 +240,7 @@ class Game:
         random_pos = None
         A_star_res = None
         last_seen = None
+        turn_so_far = 0
         while running:
             if not turn:
                 is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(self.maze, self.MAP_DIMENSIONS)
@@ -203,7 +252,7 @@ class Game:
                     self.seeker.reset_known_map()
                     successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, hider_pos)
                     self.seeker = successor
-                    if self.seeker.caught_hider(self.hiders):
+                    if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         last_seen = None
                         SCORE += 20
                         num_hiders -= 1
@@ -212,7 +261,6 @@ class Game:
                             screen.blit(winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
                             pygame.display.flip()
-                            pygame.time.wait(1000)
                             break
                 elif last_seen != None: #if hider is not in vicinity, seeker will trace to the last seen position
                     successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, last_seen) # go to last seen position
@@ -247,9 +295,22 @@ class Game:
                         self.seeker = successor
                 SCORE -= 1
             else:
+                turn_so_far += 1
                 for i in range(len(self.hiders)):
                     move = self.hiders[i].move(self.maze, self.MAP_DIMENSIONS, 3)
+                    ann_prev_pos = None
+                    if self.announcements[i]:
+                        ann_prev_pos = self.announcements[i].get_pos()
+                    announcement = self.hiders[i].announce(turn_so_far, self.maze, self.MAP_DIMENSIONS)
+                    if announcement:
+                        self.announcements[i] = announcement
+                        ann_pos = announcement.get_pos()
+                        if ann_prev_pos  and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
+                            self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
+                        self.maze[ann_pos[0]][ann_pos[1]] = 6
                     self.hiders[i] = move
+                if turn_so_far >= 6:
+                    turn_so_far = 0
             screen.fill((0,0,0))
             vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
@@ -260,16 +321,26 @@ class Game:
             turn_text = pygame.font.Font(None, 36).render("Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
             screen.blit(turn_text, (10, 10))
             score_text = pygame.font.Font(None, 36).render("Score: " + str(SCORE), 1, (255, 235, 240))
+            run_text = pygame.font.Font(None, 36).render("Run: #" + str(RUN), 1, (255, 235, 240))
+            screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
             clock.tick(10)
             turn = not turn
 
-filename = "Tests/maze2.txt"
+filename = "Tests/maze3.txt"
 game = Game(filename)
-while running:
+for i in range(1000):
+    RUN = i + 1
+    print("Run: #", i + 1)
     handle_event()
+    # game.level_3(len(game.hiders))
+    # game.level_1()
     game.level_3(len(game.hiders))
+    # run_text = pygame.font.Font(None, 36).render("Run: #" + str(run), 1, (255, 235, 240))
+    # screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
+    # pygame.display.flip()
+    # pygame.time.wait(10000)
     game.reset_game(filename)
 pygame.quit()

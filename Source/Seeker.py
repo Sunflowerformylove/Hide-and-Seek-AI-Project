@@ -4,6 +4,7 @@ import time  # for debugging purposes
 from Support import logic_vision, Node
 from readMaze import print_maze
 from Hider import Hider
+from Announcement import Announcement
 import random
 
 # 1 for wall
@@ -14,10 +15,28 @@ import random
 # 5 for hider's vision
 # 6 for announced cell
 
+# Ô 1: 3 Ô 2: 6
+# Ô 1 : 6 Ô 2 : 3
+
 def swap(maze: list[list[int]], a: tuple[int, int], b: tuple[int, int]):
-    if maze[a[0]][a[1]] == 3 and maze[b[0]][b[1]] == 2:
+    if maze[a[0]][a[1]] == 3 and (maze[b[0]][b[1]] == 2 or maze[b[0]][b[1]] == 6):
         maze[b[0]][b[1]] = 3
         maze[a[0]][a[1]] = 0
+    elif maze[b[0]][b[1]] == 3 and (maze[a[0]][a[1]] == 2 or maze[a[0]][a[1]] == 6):
+        maze[a[0]][a[1]] = 3
+        maze[b[0]][b[1]] = 0
+    elif maze[a[0]][a[1]] == 2 and (maze[b[0]][b[1]] == 3 or maze[b[0]][b[1]] == 6):
+        maze[b[0]][b[1]] = 3
+        maze[a[0]][a[1]] = 0
+    elif maze[b[0]][b[1]] == 2 and (maze[a[0]][a[1]] == 3 or maze[a[0]][a[1]] == 6):
+        maze[a[0]][a[1]] = 3
+        maze[b[0]][b[1]] = 0
+    elif maze[a[0]][a[1]] == 6 and (maze[b[0]][b[1]] == 3 or maze[b[0]][b[1]] == 2):
+        maze[b[0]][b[1]] = 3
+        maze[a[0]][a[1]] = 0
+    elif maze[b[0]][b[1]] == 6 and (maze[a[0]][a[1]] == 3 or maze[a[0]][a[1]] == 2):
+        maze[a[0]][a[1]] = 3
+        maze[b[0]][b[1]] = 0
     else:
         maze[a[0]][a[1]], maze[b[0]][b[1]] = maze[b[0]][b[1]], maze[a[0]][a[1]]
         
@@ -84,31 +103,31 @@ class Seeker:
         moves = []
         if self.current_pos[0] > 0:
             if self.current_pos[1] > 0:
-                if map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 4 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 2:
+                if map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 4 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 2 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 6:
                     if orthodox:
                         moves.append("up-left")
             if self.current_pos[1] < map_dimensions[1] - 1:
-                if map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 4 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 2:
+                if map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 4 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 2 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 6:
                     if orthodox:
                         moves.append("up-right")
-            if map[self.current_pos[0] - 1][self.current_pos[1]] == 0 or map[self.current_pos[0] - 1][self.current_pos[1]] == 4 or map[self.current_pos[0] - 1][self.current_pos[1]] == 2:
+            if map[self.current_pos[0] - 1][self.current_pos[1]] == 0 or map[self.current_pos[0] - 1][self.current_pos[1]] == 4 or map[self.current_pos[0] - 1][self.current_pos[1]] == 2 or map[self.current_pos[0] - 1][self.current_pos[1]] == 6:
                 moves.append("up")
         if self.current_pos[0] < map_dimensions[0] - 1:
             if self.current_pos[1] > 0:
-                if map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 4 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 2:
+                if map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 4 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 2 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 6:
                     if orthodox:
                         moves.append("down-left")
             if self.current_pos[1] < map_dimensions[1] - 1:
-                if map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 4 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 2:
+                if map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 4 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 2 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 6:
                     if orthodox:
                         moves.append("down-right")
-            if map[self.current_pos[0] + 1][self.current_pos[1]] == 0 or map[self.current_pos[0] + 1][self.current_pos[1]] == 4 or map[self.current_pos[0] + 1][self.current_pos[1]] == 2:
+            if map[self.current_pos[0] + 1][self.current_pos[1]] == 0 or map[self.current_pos[0] + 1][self.current_pos[1]] == 4 or map[self.current_pos[0] + 1][self.current_pos[1]] == 2 or map[self.current_pos[0] + 1][self.current_pos[1]] == 6:
                 moves.append("down")
         if self.current_pos[1] < map_dimensions[1] - 1:
-            if map[self.current_pos[0]][self.current_pos[1] + 1] == 0 or map[self.current_pos[0]][self.current_pos[1] + 1] == 4 or map[self.current_pos[0]][self.current_pos[1] + 1] == 2:
+            if map[self.current_pos[0]][self.current_pos[1] + 1] == 0 or map[self.current_pos[0]][self.current_pos[1] + 1] == 4 or map[self.current_pos[0]][self.current_pos[1] + 1] == 2 or map[self.current_pos[0]][self.current_pos[1] + 1] == 6:
                 moves.append("right")
         if self.current_pos[1] > 0:
-            if map[self.current_pos[0]][self.current_pos[1] - 1] == 0 or map[self.current_pos[0]][self.current_pos[1] - 1] == 4 or map[self.current_pos[0]][self.current_pos[1] - 1] == 2:
+            if map[self.current_pos[0]][self.current_pos[1] - 1] == 0 or map[self.current_pos[0]][self.current_pos[1] - 1] == 4 or map[self.current_pos[0]][self.current_pos[1] - 1] == 2 or map[self.current_pos[0]][self.current_pos[1] - 1] == 6:
                 moves.append("left")
         return moves
     
@@ -232,18 +251,27 @@ class Seeker:
         if nearest[1] != ():
             return (True, nearest[1])
         return (False, ())
-    
-    def caught_hider(self, list_hiders: list[Hider]):
-        for hider in list_hiders:
-            if hider.current_pos == self.current_pos:
-                list_hiders.remove(hider)
-                return True
-        return False
 
-    def caught_hider(self, list_hiders: list[Hider]):
-        for hider in list_hiders:
-            if hider.current_pos == self.current_pos:
-                list_hiders.remove(hider)
+    def announce_in_vicinity(self, map: list[list[int]], map_dimensions: tuple[int, int]):
+        vision = vision = logic_vision(map, 3, self.current_pos[0], self.current_pos[1], map_dimensions[0], map_dimensions[1])
+        nearest = (float("inf"), ())
+        for cell in vision:
+            if map[cell[0]][cell[1]] == 6:
+                distance = calculate_heuristic_euclidean_wr(self.current_pos, cell)
+                if distance < nearest[0]:
+                    nearest = (distance, cell)
+        if nearest[1] != ():
+            return (True, nearest[1])
+        return (False, ())
+
+    def caught_hider(self, list_hiders: list[Hider], map: list[list[int]], announcements: list[Announcement]):
+        for i in range(len(list_hiders)):
+            if self.current_pos == list_hiders[i].current_pos:
+                if announcements[i]:
+                    pos = announcements[i].get_pos()
+                    map[pos[0]][pos[1]] = 0
+                announcements.remove(announcements[i])
+                list_hiders.remove(list_hiders[i])
                 return True
         return False
     

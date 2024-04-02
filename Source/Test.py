@@ -2,7 +2,7 @@ from Seeker import *
 from readMaze import print_maze, read_maze
 import time
 
-filename = "Tests/map1_1.txt"
+filename = "Tests/maze3.txt"
 maze, MAP_DIMENSIONS = read_maze(filename)
 
 def check_map_colored(maze):
@@ -12,4 +12,9 @@ def check_map_colored(maze):
                 return False
     return True
 
+seeker = Seeker(maze, 0, None)
+print_maze(maze)
+succ = seeker.trace_hider(maze, MAP_DIMENSIONS, (1,18))
+# swap(maze, seeker.current_pos, succ.current_pos)
+seeker = succ
 print_maze(maze)
