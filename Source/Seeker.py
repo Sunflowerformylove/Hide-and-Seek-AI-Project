@@ -220,6 +220,14 @@ class Seeker:
                     map[i][j] = 0
         return map
     
+    def furthest_from_self(self, cells: list[tuple[int, int]]) -> tuple[int, int]:
+        furthest = (0, ())
+        for cell in cells:
+            distance = calculate_heuristic_euclidean_wr(self.current_pos, cell)
+            if distance > furthest[0]:
+                furthest = (distance, cell)
+        return furthest[1]
+    
     def trace_random(self, maze: list[list[int]], map_dimensions: tuple[int, int], chosen_pos: tuple[int, int]):
         frontier = PriorityQueue()
         current = self.clone()

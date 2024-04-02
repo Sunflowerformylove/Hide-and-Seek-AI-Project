@@ -3,7 +3,6 @@ from Seeker import *
 from copy import deepcopy
 from Global import *
 
-exec()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 

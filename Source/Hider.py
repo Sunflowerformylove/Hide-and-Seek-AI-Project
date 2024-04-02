@@ -23,27 +23,27 @@ class Hider:
         moves = []
         if self.current_pos[0] > 0:
             if self.current_pos[1] > 0:
-                if map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 4:
+                if map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 4 or map[self.current_pos[0] - 1][self.current_pos[1] - 1] == 6:
                     moves.append("up-left")
             if self.current_pos[1] < map_dimensions[1] - 1:
-                if map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 4:
+                if map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 4 or map[self.current_pos[0] - 1][self.current_pos[1] + 1] == 6:
                     moves.append("up-right")
-            if map[self.current_pos[0] - 1][self.current_pos[1]] == 0 or map[self.current_pos[0] - 1][self.current_pos[1]] == 4:
+            if map[self.current_pos[0] - 1][self.current_pos[1]] == 0 or map[self.current_pos[0] - 1][self.current_pos[1]] == 4 or map[self.current_pos[0] - 1][self.current_pos[1]] == 6:
                 moves.append("up")
         if self.current_pos[0] < map_dimensions[0] - 1:
             if self.current_pos[1] > 0:
-                if map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 4:
+                if map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 4 or map[self.current_pos[0] + 1][self.current_pos[1] - 1] == 6:
                     moves.append("down-left")
             if self.current_pos[1] < map_dimensions[1] - 1:
-                if map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 4:
+                if map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 0 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 4 or map[self.current_pos[0] + 1][self.current_pos[1] + 1] == 6:
                     moves.append("down-right")
-            if map[self.current_pos[0] + 1][self.current_pos[1]] == 0 or map[self.current_pos[0] + 1][self.current_pos[1]] == 4:
+            if map[self.current_pos[0] + 1][self.current_pos[1]] == 0 or map[self.current_pos[0] + 1][self.current_pos[1]] == 4 or map[self.current_pos[0] + 1][self.current_pos[1]] == 6:
                 moves.append("down")
         if self.current_pos[1] > 0:
-            if map[self.current_pos[0]][self.current_pos[1] - 1] == 0 or map[self.current_pos[0]][self.current_pos[1] - 1] == 4:
+            if map[self.current_pos[0]][self.current_pos[1] - 1] == 0 or map[self.current_pos[0]][self.current_pos[1] - 1] == 4 or map[self.current_pos[0]][self.current_pos[1] - 1] == 6:
                 moves.append("left")
         if self.current_pos[1] < map_dimensions[1] - 1:
-            if map[self.current_pos[0]][self.current_pos[1] + 1] == 0 or map[self.current_pos[0]][self.current_pos[1] + 1] == 4:
+            if map[self.current_pos[0]][self.current_pos[1] + 1] == 0 or map[self.current_pos[0]][self.current_pos[1] + 1] == 4 or map[self.current_pos[0]][self.current_pos[1] + 1] == 6:
                 moves.append("right")
         return moves
     
@@ -101,7 +101,8 @@ class Hider:
                 best = None
                 for successor in successors:
                     successor.calculate_heuristic_manhattan(successor.current_pos, seeker_pos)
-                    if best == None or successor.heuristic > best.heuristic:
+                    if best == None or (successor.heuristic > best.heuristic and self.heuristic <= successor.heuristic):
+                        # allow moving sideways but not settle for worse positions
                         best = successor
                 if best is not None:
                     swap(map, self.current_pos, best.current_pos)

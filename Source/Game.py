@@ -7,8 +7,6 @@ from Graphic import *
 
 pygame.init()
 running = True
-SCORE = 0
-RUN = 0
 
 # Idea: Seeker will move first, then hider will move
 # Seeker will explore map according to the highest vision unveiled
@@ -19,15 +17,26 @@ RUN = 0
 # Seeker will only be able to trace to the hider if the hider is in the seeker's vision via shared map information
 # The random position could be a dead end, meaning that the seeker will not be able to reach the random position, and will have to choose another random position'
 # The random position has a chance to be the hider's position, but the seeker will not know that it is the hider's position
-# until the hider is in the seeker's vision 
+# until the hider is in the seeker's vision
 
+# Priority of targets will be:
+# 1. Hider in vicinity
+# 2. Nearest hider's announcement and its vicinity
+# 3. Random position
+# 4. Local maximum aka sweeping the map
+
+# For level 3 and 4, the priority will be slightly different, as the seeker will have to trace to the last seen position of the hider
+# So, last seen pos will be hider than announcement, and announcement will be higher than random position
+
+# Finding either hider or hider's last seen position will effectively clear the known map, as well as the random position
+# and its A* path, and the announcement and its A* path
 class Game:
     def __init__(self, filename: str):
         self.maze, self.MAP_DIMENSIONS = read_maze(filename)
         self.seeker = Seeker(self.maze, 0)
         self.hiders = self.set_hiders()
         self.announcements = self.set_announcements()
-        
+
     def reset_game(self, filename: str):
         global SCORE
         self.maze, self.MAP_DIMENSIONS = read_maze(filename)
@@ -35,7 +44,7 @@ class Game:
         self.hiders = self.set_hiders()
         self.announcements = self.set_announcements()
         SCORE = 0
-        
+
     def set_hiders(self):
         hiders = []
         for i in range(len(self.maze)):
@@ -49,13 +58,15 @@ class Game:
         for i in range(len(self.hiders)):
             announcements.append(None)
         return announcements
-    
+
     def level_1(self):
         global SCORE
-        vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+        global FPS
+        vision = logic_vision(
+            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
         self.seeker.format_map_by_vision(vision)
         self.seeker.calculate_heuristic_vision()
-        turn = False # Seeker moves first
+        turn = False  # Seeker moves first
         random_pos = None
         A_star_res = None
         prioritized = None
@@ -63,42 +74,102 @@ class Game:
         turn_so_far = 0
         while running:
             if not turn:
-                is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(self.maze, self.MAP_DIMENSIONS)
+                is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(
+                    self.maze, self.MAP_DIMENSIONS)
+                announce_in_vicinity, ann_pos = self.seeker.announce_in_vicinity(
+                    self.maze, self.MAP_DIMENSIONS)
                 if is_in_vicinity:
                     if random_pos != None:
                         random_pos = None
                         A_star_res = None
-                    successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, hider_pos)
+                    if prioritized != None:
+                        A_star_ann = None
+                        prioritized = None
+                    successor = self.seeker.trace_hider(
+                        self.maze, self.MAP_DIMENSIONS, hider_pos)
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         SCORE += 20
-                        winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 235, 240))
+                        winner = pygame.font.Font(None, 36).render(
+                            "Seeker wins", 1, (255, 235, 240))
                         screen.blit(winner, (WIDTH - 10, 10))
                         show_maze(self.maze)
                         pygame.display.flip()
                         break
+                elif announce_in_vicinity and (prioritized == None or prioritized == []):
+                    if random_pos != None:
+                        random_pos = None
+                        A_star_res = None
+                    for i in range(len(self.hiders)):
+                        if self.announcements[i] and self.announcements[i].get_pos() == ann_pos:
+                            prioritized = self.announcements[i].get_info()
+                            break
+                    furthest = self.seeker.furthest_from_self(prioritized)
+                    A_star_ann = self.seeker.trace_random(
+                        self.maze, self.MAP_DIMENSIONS, furthest)
+                    A_star_ann.pop(0)
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
+                    for cell in vision:
+                        if cell in prioritized:
+                            prioritized.remove(cell)
+                    A_star_ann.pop(0)
+                elif A_star_ann != None:
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
+                    for cell in vision:
+                        if cell in prioritized:
+                            prioritized.remove(cell)
+                    A_star_ann.pop(0)
+                    if len(A_star_ann) == 0:
+                        A_star_ann = None
+                elif A_star_ann == None and prioritized != None and prioritized != []:
+                    furthest = self.seeker.furthest_from_self(prioritized)
+                    A_star_ann = self.seeker.trace_random(
+                        self.maze, self.MAP_DIMENSIONS, furthest)
+                    A_star_ann.pop(0)
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    A_star_ann.pop(0)
                 elif random_pos != None:
                     if A_star_res == None:
-                        A_star_res = self.seeker.trace_random(self.maze, self.MAP_DIMENSIONS, random_pos)
+                        A_star_res = self.seeker.trace_random(
+                            self.maze, self.MAP_DIMENSIONS, random_pos)
                         if A_star_res == None:
                             random_pos = None
                             continue
                         A_star_res.pop(0)
-                        successor = self.seeker.move_to_pos(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
+                        successor = self.seeker.move_to_pos(
+                            self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
                         A_star_res.pop(0)
                     else:
-                        successor = self.seeker.move_to_pos(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
+                        successor = self.seeker.move_to_pos(
+                            self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
-                        self.seeker.format_map_by_vision(logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
+                        self.seeker.format_map_by_vision(logic_vision(
+                            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
                         A_star_res.pop(0)
                         if len(A_star_res) == 0:
                             A_star_res = None
                             random_pos = None
                 else:
-                    successor = self.seeker.move(self.maze, self.MAP_DIMENSIONS)
+                    successor = self.seeker.move(
+                        self.maze, self.MAP_DIMENSIONS)
                     if type(successor) == tuple:
                         random_pos = successor
                     else:
@@ -110,83 +181,148 @@ class Game:
                     ann_prev_pos = None
                     if self.announcements[i]:
                         ann_prev_pos = self.announcements[i].get_pos()
-                    announcement = self.hiders[i].announce(turn_so_far, self.maze, self.MAP_DIMENSIONS)
+                    announcement = self.hiders[i].announce(
+                        turn_so_far, self.maze, self.MAP_DIMENSIONS)
                     if announcement:
                         self.announcements[i] = announcement
                         ann_pos = announcement.get_pos()
                         if ann_prev_pos and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
                             self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
                         self.maze[ann_pos[0]][ann_pos[1]] = 6
-                    move = self.hiders[i].move(self.maze, self.MAP_DIMENSIONS, 1)
+                    move = self.hiders[i].move(
+                        self.maze, self.MAP_DIMENSIONS, 1)
                     self.hiders[i] = move
                 if turn_so_far >= 6:
                     turn_so_far = 0
-            screen.fill((0,0,0))
-            vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+            screen.fill((0, 0, 0))
+            vision = logic_vision(
+                self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
             for cell in vision:
                 if show_map[cell[0]][cell[1]] == 0:
                     show_map[cell[0]][cell[1]] = 4
             handle_event()
-            turn_text = pygame.font.Font(None, 36).render("Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
+            turn_text = pygame.font.Font(None, 36).render(
+                "Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
             screen.blit(turn_text, (10, 10))
-            score_text = pygame.font.Font(None, 36).render("Score: " + str(SCORE), 1, (255, 235, 240))
+            score_text = pygame.font.Font(None, 36).render(
+                "Score: " + str(SCORE), 1, (255, 235, 240))
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
-            clock.tick(0)
+            clock.tick(FPS)
             turn = not turn
-            
+
     def level_2(self, num_hiders: int):
         global SCORE
         global RUN
-        vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
-        turn = False # Seeker moves first
+        vision = logic_vision(
+            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+        turn = False  # Seeker moves first
         random_pos = None
         A_star_res = None
+        A_star_ann = None
+        prioritized = None
         turn_so_far = 0
         while True:
             if not turn:
                 is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(self.maze, self.MAP_DIMENSIONS)
+                announce_in_vicinity, ann_pos = self.seeker.announce_in_vicinity(self.maze, self.MAP_DIMENSIONS)
                 if is_in_vicinity:
                     if random_pos != None:
                         random_pos = None
                         A_star_res = None
-                    successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, hider_pos)
-                    # print(successor.map)
+                    if prioritized != None:
+                        A_star_ann = None
+                        prioritized = None
+                    successor = self.seeker.trace_hider(
+                        self.maze, self.MAP_DIMENSIONS, hider_pos)
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         num_hiders -= 1
                         SCORE += 20
                         if num_hiders == 0:
-                            winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 235, 240))
-                            screen.blit(winner, (WIDTH - winner.get_width() - 10, 10))
+                            winner = pygame.font.Font(None, 36).render(
+                                "Seeker wins", 1, (255, 235, 240))
+                            screen.blit(
+                                winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
                             pygame.display.flip()
                             break
+                elif announce_in_vicinity and (prioritized == None or prioritized == []):
+                    if random_pos != None:
+                        random_pos = None
+                        A_star_res = None
+                    for i in range(len(self.hiders)):
+                        if self.announcements[i] and self.announcements[i].get_pos() == ann_pos:
+                            prioritized = self.announcements[i].get_info()
+                            break
+                    furthest = self.seeker.furthest_from_self(prioritized)
+                    A_star_ann = self.seeker.trace_random(
+                        self.maze, self.MAP_DIMENSIONS, furthest)
+                    A_star_ann.pop(0)
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
+                    for cell in vision:
+                        if cell in prioritized:
+                            prioritized.remove(cell)
+                    A_star_ann.pop(0)
+                elif A_star_ann != None:
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
+                    for cell in vision:
+                        if cell in prioritized:
+                            prioritized.remove(cell)
+                    A_star_ann.pop(0)
+                    if len(A_star_ann) == 0:
+                        A_star_ann = None
+                elif A_star_ann == None and prioritized != None and prioritized != []:
+                    furthest = self.seeker.furthest_from_self(prioritized)
+                    A_star_ann = self.seeker.trace_random(
+                        self.maze, self.MAP_DIMENSIONS, furthest)
+                    A_star_ann.pop(0)
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    A_star_ann.pop(0)
                 elif random_pos != None:
                     if A_star_res == None:
-                        A_star_res = self.seeker.trace_random(self.maze, self.MAP_DIMENSIONS, random_pos)
+                        A_star_res = self.seeker.trace_random(
+                            self.maze, self.MAP_DIMENSIONS, random_pos)
                         if A_star_res == None:
                             random_pos = None
                             continue
                         A_star_res.pop(0)
-                        successor = self.seeker.move_to_pos(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
+                        successor = self.seeker.move_to_pos(
+                            self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
                         A_star_res.pop(0)
                     else:
-                        successor = self.seeker.move_to_pos(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
-                        # successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
+                        successor = self.seeker.move_to_pos(
+                            self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
-                        self.seeker.format_map_by_vision(logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
+                        self.seeker.format_map_by_vision(logic_vision(
+                            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
                         A_star_res.pop(0)
                         if len(A_star_res) == 0:
                             A_star_res = None
                             random_pos = None
                 else:
-                    successor = self.seeker.move(self.maze, self.MAP_DIMENSIONS)
+                    successor = self.seeker.move(
+                        self.maze, self.MAP_DIMENSIONS)
                     if type(successor) == tuple:
                         random_pos = successor
                     else:
@@ -198,97 +334,172 @@ class Game:
                     ann_prev_pos = None
                     if self.announcements[i]:
                         ann_prev_pos = self.announcements[i].get_pos()
-                    announcement = self.hiders[i].announce(turn_so_far, self.maze, self.MAP_DIMENSIONS)
+                    announcement = self.hiders[i].announce(
+                        turn_so_far, self.maze, self.MAP_DIMENSIONS)
                     if announcement:
-                        # print("Prev:",ann_prev_pos)
                         self.announcements[i] = None
                         self.announcements[i] = announcement
                         ann_pos = announcement.get_pos()
                         if ann_prev_pos and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
                             self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
                         self.maze[ann_pos[0]][ann_pos[1]] = 6
-                    move = self.hiders[i].move(self.maze, self.MAP_DIMENSIONS, 2)
+                    move = self.hiders[i].move(
+                        self.maze, self.MAP_DIMENSIONS, 2)
                     self.hiders[i] = move
                 if turn_so_far >= 6:
                     turn_so_far = 0
-            screen.fill((0,0,0))
-            vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+            screen.fill((0, 0, 0))
+            vision = logic_vision(
+                self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
             for cell in vision:
                 if show_map[cell[0]][cell[1]] == 0:
                     show_map[cell[0]][cell[1]] = 4
             handle_event()
-            turn_text = pygame.font.Font(None, 36).render("Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
+            turn_text = pygame.font.Font(None, 36).render(
+                "Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
             screen.blit(turn_text, (10, 10))
-            score_text = pygame.font.Font(None, 36).render("Score: " + str(SCORE), 1, (255, 235, 240))
+            score_text = pygame.font.Font(None, 36).render(
+                "Score: " + str(SCORE), 1, (255, 235, 240))
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
-            run_text = pygame.font.Font(None, 36).render("Run: #" + str(RUN), 1, (255, 235, 240))
+            run_text = pygame.font.Font(None, 36).render(
+                "Run: #" + str(RUN), 1, (255, 235, 240))
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
             show_maze(show_map)
             pygame.display.flip()
-            if abs(SCORE) >= 200 or show_map[self.seeker.current_pos[0]][self.seeker.current_pos[1]] == 0:
-                pygame.time.wait(100000)
-                clock.tick(1)
-            else:
-                clock.tick(0)
+            clock.tick(FPS)
             turn = not turn
-            
+
     def level_3(self, num_hiders: int):
         global SCORE
-        vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
-        turn = False # Seeker moves first
+        vision = logic_vision(
+            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+        turn = False  # Seeker moves first
         random_pos = None
         A_star_res = None
+        A_star_ann = None
+        prioritized = None
         last_seen = None
         turn_so_far = 0
         while running:
             if not turn:
-                is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(self.maze, self.MAP_DIMENSIONS)
+                is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(
+                    self.maze, self.MAP_DIMENSIONS)
+                announce_in_vicinity, ann_pos = self.seeker.announce_in_vicinity(
+                    self.maze, self.MAP_DIMENSIONS)
                 if is_in_vicinity:
                     last_seen = hider_pos
                     if random_pos != None:
                         random_pos = None
                         A_star_res = None
+                    if prioritized != None:
+                        A_star_ann = None
+                        prioritized = None
                     self.seeker.reset_known_map()
-                    successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, hider_pos)
+                    successor = self.seeker.trace_hider(
+                        self.maze, self.MAP_DIMENSIONS, hider_pos)
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         last_seen = None
                         SCORE += 20
                         num_hiders -= 1
                         if num_hiders == 0:
-                            winner = pygame.font.Font(None, 36).render("Seeker wins", 1, (255, 235, 240))
-                            screen.blit(winner, (WIDTH - winner.get_width() - 10, 10))
+                            winner = pygame.font.Font(None, 36).render(
+                                "Seeker wins", 1, (255, 235, 240))
+                            screen.blit(
+                                winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
                             pygame.display.flip()
                             break
-                elif last_seen != None: #if hider is not in vicinity, seeker will trace to the last seen position
-                    successor = self.seeker.trace_hider(self.maze, self.MAP_DIMENSIONS, last_seen) # go to last seen position
+                elif last_seen != None:  # if hider is not in vicinity, seeker will trace to the last seen position
+                    if random_pos != None:
+                        random_pos = None
+                        A_star_res = None
+                    if prioritized != None:
+                        A_star_ann = None
+                        prioritized = None
+                    successor = self.seeker.trace_hider(
+                        self.maze, self.MAP_DIMENSIONS, last_seen)  # go to last seen position
                     self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
                     if self.seeker.current_pos == last_seen:
                         last_seen = None
+                elif announce_in_vicinity and (prioritized == None or prioritized == []):
+                    if random_pos != None:
+                        random_pos = None
+                        A_star_res = None
+                    for i in range(len(self.hiders)):
+                        if self.announcements[i] and self.announcements[i].get_pos() == ann_pos:
+                            prioritized = self.announcements[i].get_info()
+                            break
+                    furthest = self.seeker.furthest_from_self(prioritized)
+                    A_star_ann = self.seeker.trace_random(
+                        self.maze, self.MAP_DIMENSIONS, furthest)
+                    A_star_ann.pop(0)
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
+                    for cell in vision:
+                        if cell in prioritized:
+                            prioritized.remove(cell)
+                    A_star_ann.pop(0)
+                elif A_star_ann != None:
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
+                    for cell in vision:
+                        if cell in prioritized:
+                            prioritized.remove(cell)
+                    A_star_ann.pop(0)
+                    if len(A_star_ann) == 0:
+                        A_star_ann = None
+                elif A_star_ann == None and prioritized != None and prioritized != []:
+                    furthest = self.seeker.furthest_from_self(prioritized)
+                    A_star_ann = self.seeker.trace_random(
+                        self.maze, self.MAP_DIMENSIONS, furthest)
+                    A_star_ann.pop(0)
+                    successor = self.seeker.move_to_pos(
+                        self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
+                    swap(self.maze, self.seeker.current_pos, A_star_ann[0])
+                    self.seeker = successor
+                    A_star_ann.pop(0)
                 elif random_pos != None:
                     if A_star_res == None:
-                        A_star_res = self.seeker.trace_random(self.maze, self.MAP_DIMENSIONS, random_pos)
+                        A_star_res = self.seeker.trace_random(
+                            self.maze, self.MAP_DIMENSIONS, random_pos)
                         if A_star_res == None:
                             random_pos = None
                             continue
                         A_star_res.pop(0)
-                        successor = self.seeker.move_to_pos(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
+                        successor = self.seeker.move_to_pos(
+                            self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
                         A_star_res.pop(0)
                     else:
-                        successor = self.seeker.move_to_pos(self.maze, self.MAP_DIMENSIONS, A_star_res[0])
+                        successor = self.seeker.move_to_pos(
+                            self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
-                        self.seeker.format_map_by_vision(logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
+                        self.seeker.format_map_by_vision(logic_vision(
+                            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
                         A_star_res.pop(0)
                         if len(A_star_res) == 0:
                             A_star_res = None
                             random_pos = None
                 else:
-                    successor = self.seeker.move(self.maze, self.MAP_DIMENSIONS)
+                    successor = self.seeker.move(
+                        self.maze, self.MAP_DIMENSIONS)
                     if type(successor) == tuple:
                         random_pos = successor
                     else:
@@ -297,50 +508,53 @@ class Game:
             else:
                 turn_so_far += 1
                 for i in range(len(self.hiders)):
-                    move = self.hiders[i].move(self.maze, self.MAP_DIMENSIONS, 3)
+                    move = self.hiders[i].move(
+                        self.maze, self.MAP_DIMENSIONS, 3)
                     ann_prev_pos = None
                     if self.announcements[i]:
                         ann_prev_pos = self.announcements[i].get_pos()
-                    announcement = self.hiders[i].announce(turn_so_far, self.maze, self.MAP_DIMENSIONS)
+                    announcement = self.hiders[i].announce(
+                        turn_so_far, self.maze, self.MAP_DIMENSIONS)
                     if announcement:
                         self.announcements[i] = announcement
                         ann_pos = announcement.get_pos()
-                        if ann_prev_pos  and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
+                        if ann_prev_pos and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
                             self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
                         self.maze[ann_pos[0]][ann_pos[1]] = 6
                     self.hiders[i] = move
                 if turn_so_far >= 6:
                     turn_so_far = 0
-            screen.fill((0,0,0))
-            vision = logic_vision(self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+            screen.fill((0, 0, 0))
+            vision = logic_vision(
+                self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
             for cell in vision:
                 if show_map[cell[0]][cell[1]] == 0:
                     show_map[cell[0]][cell[1]] = 4
             handle_event()
-            turn_text = pygame.font.Font(None, 36).render("Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
+            turn_text = pygame.font.Font(None, 36).render(
+                "Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
             screen.blit(turn_text, (10, 10))
-            score_text = pygame.font.Font(None, 36).render("Score: " + str(SCORE), 1, (255, 235, 240))
-            run_text = pygame.font.Font(None, 36).render("Run: #" + str(RUN), 1, (255, 235, 240))
+            score_text = pygame.font.Font(None, 36).render(
+                "Score: " + str(SCORE), 1, (255, 235, 240))
+            run_text = pygame.font.Font(None, 36).render(
+                "Run: #" + str(RUN), 1, (255, 235, 240))
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
-            clock.tick(10)
+            clock.tick(FPS)
             turn = not turn
 
-filename = "Tests/maze3.txt"
+
+filename = "Tests/maze10.txt"
 game = Game(filename)
 for i in range(1000):
     RUN = i + 1
     print("Run: #", i + 1)
     handle_event()
-    # game.level_3(len(game.hiders))
+    # game.level_2(len(game.hiders))
     # game.level_1()
     game.level_3(len(game.hiders))
-    # run_text = pygame.font.Font(None, 36).render("Run: #" + str(run), 1, (255, 235, 240))
-    # screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
-    # pygame.display.flip()
-    # pygame.time.wait(10000)
     game.reset_game(filename)
 pygame.quit()
