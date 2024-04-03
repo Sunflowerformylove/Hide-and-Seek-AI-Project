@@ -226,6 +226,8 @@ class Seeker:
             distance = calculate_heuristic_euclidean_wr(self.current_pos, cell)
             if distance > furthest[0]:
                 furthest = (distance, cell)
+        if furthest[1] == ():
+            print(cells)
         return furthest[1]
     
     def trace_random(self, maze: list[list[int]], map_dimensions: tuple[int, int], chosen_pos: tuple[int, int]):
@@ -277,9 +279,15 @@ class Seeker:
             if self.current_pos == list_hiders[i].current_pos:
                 if announcements[i]:
                     pos = announcements[i].get_pos()
-                    map[pos[0]][pos[1]] = 0
-                announcements.remove(announcements[i])
-                list_hiders.remove(list_hiders[i])
+                    for j in range(len(announcements)):
+                        if j != i and announcements[j] and announcements[j].get_pos() == pos:
+                            break
+                        else:
+                            continue
+                    else:
+                        map[pos[0]][pos[1]] = 0
+                announcements.pop(i)
+                list_hiders.pop(i)
                 return True
         return False
     

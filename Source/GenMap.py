@@ -328,5 +328,5 @@ def create_L_walls(map: list[list[int]], N: int, M: int) -> None: # lỗi chă�
                 is_4th_zone = True
 
 
-new_map = generate_map(200, 200, 50, 2)
-export_map(new_map, "Tests/maze10.txt")
+new_map = generate_map(50, 50, 10, 2)
+export_map(new_map, "Tests/maze11.txt")

@@ -403,6 +403,9 @@ class Game:
                         last_seen = None
                         SCORE += 20
                         num_hiders -= 1
+                        for announcement in self.announcements:
+                            if announcement:
+                                self.maze[announcement.get_pos()[0]][announcement.get_pos()[1]] = 6
                         if num_hiders == 0:
                             winner = pygame.font.Font(None, 36).render(
                                 "Seeker wins", 1, (255, 235, 240))
@@ -418,6 +421,7 @@ class Game:
                     if prioritized != None:
                         A_star_ann = None
                         prioritized = None
+                    self.seeker.reset_known_map()
                     successor = self.seeker.trace_hider(
                         self.maze, self.MAP_DIMENSIONS, last_seen)  # go to last seen position
                     self.seeker = successor
@@ -430,6 +434,7 @@ class Game:
                     if random_pos != None:
                         random_pos = None
                         A_star_res = None
+                    self.seeker.reset_known_map()
                     for i in range(len(self.hiders)):
                         if self.announcements[i] and self.announcements[i].get_pos() == ann_pos:
                             prioritized = self.announcements[i].get_info()
@@ -513,15 +518,24 @@ class Game:
                     ann_prev_pos = None
                     if self.announcements[i]:
                         ann_prev_pos = self.announcements[i].get_pos()
-                    announcement = self.hiders[i].announce(
-                        turn_so_far, self.maze, self.MAP_DIMENSIONS)
-                    if announcement:
-                        self.announcements[i] = announcement
-                        ann_pos = announcement.get_pos()
-                        if ann_prev_pos and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
-                            self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
-                        self.maze[ann_pos[0]][ann_pos[1]] = 6
+                    if self.hiders[i].current_pos == move.current_pos:
+                        announcement = self.hiders[i].announce(
+                            turn_so_far, self.maze, self.MAP_DIMENSIONS)
+                        if announcement:
+                            self.announcements[i] = None
+                            self.announcements[i] = announcement
+                            ann_pos = announcement.get_pos()
+                            if ann_prev_pos and self.maze[ann_prev_pos[0]][ann_prev_pos[1]] == 6:
+                                self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
+                            self.maze[ann_pos[0]][ann_pos[1]] = 6
+                    else:
+                        if self.announcements[i]:  
+                            if self.maze[self.announcements[i].get_pos()[0]][self.announcements[i].get_pos()[1]] == 6:
+                                self.maze[self.announcements[i].get_pos()[0]][self.announcements[i].get_pos()[1]] = 0
+                            self.announcements[i] = None
                     self.hiders[i] = move
+                    if self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] == 0:
+                        self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] = 2
                 if turn_so_far >= 6:
                     turn_so_far = 0
             screen.fill((0, 0, 0))
@@ -547,9 +561,9 @@ class Game:
             turn = not turn
 
 
-filename = "Tests/maze10.txt"
+filename = "Tests/maze11.txt"
 game = Game(filename)
-for i in range(1000):
+for i in range(100):
     RUN = i + 1
     print("Run: #", i + 1)
     handle_event()

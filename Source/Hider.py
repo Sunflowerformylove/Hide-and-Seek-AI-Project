@@ -7,6 +7,12 @@ from Announcement import Announcement
 # Hider and seeker will use the same map.
 
 def swap(map, pos1, pos2):
+    if map[pos1[0]][pos1[1]] == 2 and map[pos2[0]][pos2[1]] == 6:
+        map[pos1[0]][pos1[1]] = 0
+        map[pos2[0]][pos2[1]] = 2
+    elif map[pos1[0]][pos1[1]] == 6 and map[pos2[0]][pos2[1]] == 2:
+        map[pos1[0]][pos1[1]] = 2
+        map[pos2[0]][pos2[1]] = 0        
     map[pos1[0]][pos1[1]], map[pos2[0]][pos2[1]] = map[pos2[0]][pos2[1]], map[pos1[0]][pos1[1]]
 
 class Hider:
@@ -97,13 +103,15 @@ class Hider:
             if not is_in_vicinity:
                 return self.clone()
             else:
+                self.calculate_heuristic_manhattan(self.current_pos, seeker_pos)
                 successors = self.generate(map, map_dimensions)
                 best = None
+                best_heuristic = self.heuristic
                 for successor in successors:
                     successor.calculate_heuristic_manhattan(successor.current_pos, seeker_pos)
-                    if best == None or (successor.heuristic > best.heuristic and self.heuristic <= successor.heuristic):
-                        # allow moving sideways but not settle for worse positions
+                    if successor.heuristic >= best_heuristic:
                         best = successor
+                        best_heuristic = successor.heuristic
                 if best is not None:
                     swap(map, self.current_pos, best.current_pos)
                     return best

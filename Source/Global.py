@@ -3,11 +3,11 @@ import sys
 # GLOBAL VARIABLES
 WIDTH, HEIGHT = 1280, 720
 MODE = "dark"
-CELL_SIZE = 10
+CELL_SIZE = 14
 FILENAME = "Test/maze.txt"
 MAZE = []
 MAP_DIMENSIONS = (0, 0)
 PAUSE = False
 SCORE = 0
 RUN = 0
-FPS = 10
+FPS = 0
