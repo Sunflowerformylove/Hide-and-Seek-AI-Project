@@ -59,16 +59,16 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
                 res.append((curPosY + i*direction[quarter][t][0], curPosX + i*direction[quarter][t][1]))     
                 if map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 1:
                     res.pop()
-                    nextPos1 = [curPosY + direction[quarter][t][0] + direction[quarter][3][0], curPosX + direction[quarter][t][1] + direction[quarter][3][1]]
-                    nextPos2 = [curPosY + direction[quarter][t][0] + direction[quarter][4][0], curPosX + direction[quarter][t][1] + direction[quarter][4][1]]
+                    nextPos1 = [curPosY + direction[quarter][3][0], curPosX + direction[quarter][3][1]]
+                    nextPos2 = [curPosY + direction[quarter][4][0], curPosX  + direction[quarter][4][1]]
                     # Danh dau o 10 neu bi chan o 1
-                    if t == 0 and pos_in_range(nextPos1, N, M): 
+                    if t == 0 and pos_in_range(nextPos1, N, M) and i == 1: 
                         map[nextPos1[0]][nextPos1[1]] = 1
                     # Danh dau o 14 neu bi chan o 3
-                    elif t == 2 and pos_in_range(nextPos2, N, M): 
+                    elif t == 2 and pos_in_range(nextPos2, N, M) and i == 1: 
                         map[nextPos2[0]][nextPos2[1]] = 1
                     # Danh dau o 11 va 13 neu bi chan o 2
-                    elif t == 1 and pos_in_range(nextPos1, N, M) and pos_in_range(nextPos2, N, M):        
+                    elif t == 1 and pos_in_range(nextPos1, N, M) and pos_in_range(nextPos2, N, M) and i == 1:        
                         map[nextPos1[0]][nextPos1[1]] = 1
                         map[nextPos2[0]][nextPos2[1]] = 1
                     # Dung ngay khi gap o bi chan
