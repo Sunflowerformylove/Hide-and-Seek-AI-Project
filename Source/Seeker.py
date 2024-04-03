@@ -285,7 +285,8 @@ class Seeker:
                         else:
                             continue
                     else:
-                        map[pos[0]][pos[1]] = 0
+                        if map[pos[0]][pos[1]] == 6:
+                            map[pos[0]][pos[1]] = 0
                 announcements.pop(i)
                 list_hiders.pop(i)
                 return True
