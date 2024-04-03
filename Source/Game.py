@@ -62,6 +62,7 @@ class Game:
     def level_1(self):
         global SCORE
         global FPS
+        global RUN
         vision = logic_vision(
             self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
         self.seeker.format_map_by_vision(vision)
@@ -207,6 +208,9 @@ class Game:
             screen.blit(turn_text, (10, 10))
             score_text = pygame.font.Font(None, 36).render(
                 "Score: " + str(SCORE), 1, (255, 235, 240))
+            run_text = pygame.font.Font(None, 36).render(
+                "Run: #" + str(RUN), 1, (255, 235, 240))
+            screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
@@ -534,7 +538,7 @@ class Game:
                                 self.maze[self.announcements[i].get_pos()[0]][self.announcements[i].get_pos()[1]] = 0
                             self.announcements[i] = None
                     self.hiders[i] = move
-                    if self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] == 0:
+                    if self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] == 0 or self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] == 6:
                         self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] = 2
                 if turn_so_far >= 6:
                     turn_so_far = 0
@@ -561,14 +565,14 @@ class Game:
             turn = not turn
 
 
-filename = "Tests/maze11.txt"
+filename = "Tests/map4.txt"
 game = Game(filename)
 for i in range(100):
     RUN = i + 1
     print("Run: #", i + 1)
     handle_event()
-    # game.level_2(len(game.hiders))
     # game.level_1()
-    game.level_3(len(game.hiders))
+    # game.level_2(len(game.hiders))
+    # game.level_3(len(game.hiders))
     game.reset_game(filename)
 pygame.quit()

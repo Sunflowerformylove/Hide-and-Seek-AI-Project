@@ -3,7 +3,7 @@ import sys
 # GLOBAL VARIABLES
 WIDTH, HEIGHT = 1280, 720
 MODE = "dark"
-CELL_SIZE = 14
+CELL_SIZE = 17
 FILENAME = "Test/maze.txt"
 MAZE = []
 MAP_DIMENSIONS = (0, 0)
