@@ -40,6 +40,30 @@ def check_diagonal_wall(map: list[list[int]], N: int , M: int, x: int, y: int) -
             return map[x-1][y-1] == 1 or map[x-1][y+1] == 1 or map[x+1][y-1] == 1 or map[x+1][y+1] == 1
 
 
+def is_in_cage(map: list[list[int]], N: int, M: int, x: int, y: int) -> bool: # check if the hider/seeker is in the cage made by walls or not
+    if x == 0:
+        if y == 0:
+            return map[x+1][y+1] == 1 and map[x][y+1] == 1 and map[x+1][y] == 1
+        elif y == M - 1:
+            return map[x+1][y-1] == 1 and map[x][y-1] == 1 and map[x+1][y] == 1
+        else:
+            return map[x+1][y-1] == 1 and map[x+1][y+1] == 1 and map[x+1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
+    elif x == N - 1:
+        if y == 0:
+            return map[x-1][y+1] == 1 and map[x][y+1] == 1 and map[x-1][y] == 1
+        elif y == M - 1:
+            return map[x-1][y-1] == 1 and map[x][y-1] == 1 and map[x-1][y] == 1
+        else:
+            return map[x-1][y-1] == 1 and map[x-1][y+1] == 1 and map[x-1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
+    else:
+        if y == 0:
+            return map[x-1][y+1] == 1 and map[x+1][y+1] == 1 and map[x][y+1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1
+        elif y == M - 1:
+            return map[x-1][y-1] == 1 and map[x+1][y-1] == 1 and map[x][y-1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1
+        else:
+            return map[x-1][y-1] == 1 and map[x-1][y+1] == 1 and map[x+1][y-1] == 1 and map[x+1][y+1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
+
+
 def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, num_hiders: int) -> None:
     cnt_hiders = 0
     cnt_seeker = 0
@@ -54,28 +78,28 @@ def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, nu
         if zone == 1:
             x = randint(0, N//2 - 1)
             y = randint(0, M//2 - 1)
-            if map[x][y] == 0:
+            if map[x][y] == 0 and not is_in_cage(map, N, M, x, y):
                 map[x][y] = 2
                 cnt_hiders += 1
                 is_zone1 = True
         elif zone == 2:
             x = randint(0, N//2 - 1)
             y = randint(M//2 + 1, M-1)
-            if map[x][y] == 0:
+            if map[x][y] == 0 and not is_in_cage(map, N, M, x, y):
                 map[x][y] = 2
                 cnt_hiders += 1
                 is_zone2 = True
         elif zone == 3:
             x = randint(N//2 + 1, N-1)
             y = randint(0, M//2 - 1)
-            if map[x][y] == 0:
+            if map[x][y] == 0 and not is_in_cage(map, N, M, x, y):
                 map[x][y] = 2
                 cnt_hiders += 1
                 is_zone3 = True
         else:
             x = randint(N//2 + 1, N-1)
             y = randint(M//2 + 1, M-1)
-            if map[x][y] == 0:
+            if map[x][y] == 0 and not is_in_cage(map, N, M, x, y):
                 map[x][y] = 2
                 cnt_hiders += 1
                 is_zone4 = True
@@ -94,14 +118,14 @@ def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, nu
         elif is_zone4 == False: # seeker will be in zone 4 of zone 4
             x = randint(3*N//4 + 1, N-1)
             y = randint(3*M//4 + 1, M-1)
-        else: # if all zones have hiders then hider must be in the center of the map
+        else: # if all zones have hiders then the seeker must be in the center of the map
             x = N // 2
             y = M // 2
             while map[x][y] != 0:
                 x += randint(-1, 1)
                 y += randint(-1, 1)
 
-        if map[x][y] == 0:
+        if map[x][y] == 0 and not is_in_cage(map, N, M, x, y):
             map[x][y] = 3
             cnt_seeker += 1
 
