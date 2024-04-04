@@ -9,11 +9,11 @@ class PriorityQueue:
     def empty(self):
         return len(self.elements) == 0
     
-    def push(self, item, priority):
-        heapq.heappush(self.elements, (priority, item))
+    def push(self, item, priority, tiebreaker = 0):
+        heapq.heappush(self.elements, (priority, tiebreaker, item))
     
     def pop(self):
-        return heapq.heappop(self.elements)[1]
+        return heapq.heappop(self.elements)[2]
     
 class Node:
     def __init__(self, state, parent, action, path_cost):
