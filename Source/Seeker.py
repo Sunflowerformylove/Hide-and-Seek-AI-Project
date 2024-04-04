@@ -1,7 +1,7 @@
 import copy
 from Support import PriorityQueue
 import time  # for debugging purposes
-from Support import logic_vision, Node
+from Support import logic_vision
 from readMaze import print_maze
 from Hider import Hider
 from Announcement import Announcement
