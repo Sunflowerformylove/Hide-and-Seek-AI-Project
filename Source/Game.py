@@ -87,7 +87,7 @@ class Game:
                         A_star_ann = None
                         prioritized = None
                     successor = self.seeker.trace_hider(
-                        self.maze, self.MAP_DIMENSIONS, hider_pos)
+                        self.maze, self.MAP_DIMENSIONS, hider_pos, 1)
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         SCORE += 20
@@ -240,7 +240,7 @@ class Game:
                         A_star_ann = None
                         prioritized = None
                     successor = self.seeker.trace_hider(
-                        self.maze, self.MAP_DIMENSIONS, hider_pos)
+                        self.maze, self.MAP_DIMENSIONS, hider_pos, 2)
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         num_hiders -= 1
@@ -401,7 +401,7 @@ class Game:
                         prioritized = None
                     self.seeker.reset_known_map()
                     successor = self.seeker.trace_hider(
-                        self.maze, self.MAP_DIMENSIONS, hider_pos)
+                        self.maze, self.MAP_DIMENSIONS, hider_pos, 3)
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         last_seen = None
@@ -573,6 +573,6 @@ for i in range(100):
     handle_event()
     # game.level_1()
     # game.level_2(len(game.hiders))
-    # game.level_3(len(game.hiders))
+    game.level_3(len(game.hiders))
     game.reset_game(filename)
 pygame.quit()

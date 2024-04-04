@@ -198,14 +198,26 @@ class Seeker:
                     pool.append((i, j))
         return random.choice(pool)
     
-    def trace_hider(self, maze: list[list[int]], map_dimensions: tuple[int, int], hider_pos: Hider, visited: dict[tuple[tuple[int]]] = dict()):
+    def predict(self, maze: list[list[int]], map_dimensions: tuple[int, int], hider_pos: Hider):
+        temp = Hider(copy.deepcopy(self.map), 0, self.current_pos)
+        temp.calculate_heuristic_manhattan(temp.current_pos, hider_pos)
+        best_heuristic = temp.heuristic
+        successors = temp.generate(maze, map_dimensions)
+        for successor in successors:
+            successor.calculate_heuristic_manhattan(successor.current_pos, hider_pos)
+            if successor.heuristic >= best_heuristic: # For Hider, the further the better
+                best_heuristic = successor.heuristic
+        return best_heuristic
+    
+    def trace_hider(self, maze: list[list[int]], map_dimensions: tuple[int, int], hider_pos: Hider, level = 0):
         frontier = PriorityQueue()
         successors = self.generate(maze, map_dimensions)
         for successor in successors:
             successor.calculate_heuristic_euclidean(successor.current_pos, hider_pos)
-            successor_tuple_map = tuple(map(tuple, successor.map))
-            if successor_tuple_map not in visited or visited[tuple(map(successor.map))] < successor.heuristic:
+            if level < 3:
                 frontier.push(successor, successor.heuristic)
+            else:
+                frontier.push(successor, successor.heuristic, successor.predict(maze, map_dimensions, hider_pos))
         next_move = frontier.pop()
         swap(maze, self.current_pos, next_move.current_pos)
         return next_move
