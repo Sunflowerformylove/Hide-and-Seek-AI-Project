@@ -2,6 +2,7 @@ from Args import *
 from Graphic import *
 from Game import *
 from Global import *
+from readMaze import *
 
 def main():
     change_global_vars(get_args())

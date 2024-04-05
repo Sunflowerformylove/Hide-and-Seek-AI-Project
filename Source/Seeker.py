@@ -194,6 +194,9 @@ class Seeker:
             for j in range(len(self.map[0])):
                 if self.map[i][j] == 0:
                     pool.append((i, j))
+        if len(pool) == 0:
+            self.reset_known_map()
+            return self.choose_random_unexplored_cell()
         return random.choice(pool)
     
     def predict(self, maze: list[list[int]], map_dimensions: tuple[int, int], hider_pos: Hider):

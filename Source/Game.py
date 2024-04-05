@@ -529,6 +529,9 @@ class Game:
                     furthest = self.seeker.furthest_from_self(prioritized)
                     A_star_ann = self.seeker.trace_random(
                         self.maze, self.MAP_DIMENSIONS, furthest)
+                    if A_star_ann == None:
+                        prioritized = None
+                        continue
                     A_star_ann.pop(0)
                     successor = self.seeker.move_to_pos(
                         self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
@@ -647,5 +650,7 @@ class Game:
         while PAUSE:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    PAUSE = False
+                elif event.type == pygame.KEYDOWN:
                     PAUSE = False
         pygame.quit()
