@@ -1,7 +1,7 @@
 import copy
 from Support import PriorityQueue
 import time  # for debugging purposes
-from Support import logic_vision, Node
+from Support import logic_vision
 from readMaze import print_maze
 from Hider import Hider
 from Announcement import Announcement
@@ -14,9 +14,7 @@ import random
 # 4 for seeker's vision
 # 5 for hider's vision
 # 6 for announced cell
-
-# Ô 1: 3 Ô 2: 6
-# Ô 1 : 6 Ô 2 : 3
+# 7 for object
 
 def swap(maze: list[list[int]], a: tuple[int, int], b: tuple[int, int]):
     if maze[a[0]][a[1]] == 3 and (maze[b[0]][b[1]] == 2 or maze[b[0]][b[1]] == 6):

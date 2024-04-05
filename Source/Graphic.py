@@ -1,7 +1,7 @@
 import pygame
 from Seeker import *
-from copy import deepcopy
 from Global import *
+from Args import *
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
@@ -25,20 +25,35 @@ def handle_event() -> None:
                                 quit()
 
 def show_maze(maze: list[list[int]]) -> None:
+    global CELL_SIZE
+    global WIDTH, HEIGHT
+    global MODE, DARK_MODE, LIGHT_MODE, DUNE_MODE
+    colors = {}
+    if MODE == "DARK":
+        colors = DARK_MODE
+    elif MODE == "LIGHT":
+        colors = LIGHT_MODE
+    elif MODE == "DUNE":
+        colors = DUNE_MODE
+    else:
+        colors = DARK_MODE
     offset_width = WIDTH // 2 - len(maze[0]) * CELL_SIZE // 2
     offset_height = HEIGHT // 2 - len(maze) * CELL_SIZE // 2
+    CELL_SIZE = min((HEIGHT - 50) // len(maze), (WIDTH - 50) // len(maze[0]))
     border = 1
     for i in range(len(maze)):
         for j in range(len(maze[0])):
-            if maze[i][j] == 1:   # Ivory
-                pygame.draw.rect(screen, (242, 245, 234), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            elif maze[i][j] == 2: # Persian green
-                pygame.draw.rect(screen, (51, 153, 137), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            elif maze[i][j] == 3: # Imperial red
-                pygame.draw.rect(screen, (229, 56, 59), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            elif maze[i][j] == 4: # Coral
-                pygame.draw.rect(screen, (247, 135, 100), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            elif maze[i][j] == 6: # Ash grey
-                pygame.draw.rect(screen, (157, 180, 171), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-            else: # White-ish 
-                pygame.draw.rect(screen, (253, 254, 250), (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)
+            if maze[i][j] == 1:
+                pygame.draw.rect(screen, colors["wall"], (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            elif maze[i][j] == 2:
+                pygame.draw.rect(screen, colors["hider"], (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            elif maze[i][j] == 3:
+                pygame.draw.rect(screen, colors["seeker"], (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            elif maze[i][j] == 4:
+                pygame.draw.rect(screen, colors["observed"], (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            elif maze[i][j] == 6:
+                pygame.draw.rect(screen, colors["announcement"], (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            elif maze[i][j] == 7:
+                pygame.draw.rect(screen, colors["object"], (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            else:
+                pygame.draw.rect(screen, colors["free"], (offset_width + j * CELL_SIZE, offset_height + i * CELL_SIZE, CELL_SIZE, CELL_SIZE), border)

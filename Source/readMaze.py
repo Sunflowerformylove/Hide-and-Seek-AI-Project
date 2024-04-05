@@ -9,7 +9,7 @@ def format_object_to_map(object: list[int], maze: list[list[int]]) -> list[list[
     # top left, bottom right
     for i in range(object[0], object[2] + 1): # top to bottom
         for j in range(object[1], object[3] + 1): # left to right
-            maze[i][j] = 1
+            maze[i][j] = 7
 
 def read_maze(filename: str) -> list[list[int]]:
     maze = []

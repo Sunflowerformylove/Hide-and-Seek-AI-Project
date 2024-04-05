@@ -1,7 +1,14 @@
-array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+from Test import Glob
 
-def test(array):
-    array.pop(5)
+def A():
+    global Glob
+    Glob = 4
+    print(Glob)
+
+def B():
+    global Glob
+    # Glob = 5
+    print(Glob)
     
-test(array)
-print(array)
+A()
+B()
