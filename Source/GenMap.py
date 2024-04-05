@@ -9,56 +9,30 @@ class Map:
         self.obstacles = obstacles
 
 
-def export_map(map: Map, file: str) -> None:
-    f = open(file, "w+")
-    N = map.N
-    M = map.M
-    f.write(str(N) + " " + str(M) + "\n")
+    def export_map(self, file: str) -> None:
+        f = open(file, "w+")
+        f.write(str(self.N) + " " + str(self.M) + "\n")
 
-    for i in range(N):
-        for j in range(M):
-            f.write(str(map.maze[i][j]))
-            if j != M - 1:
-                f.write(" ")
-        if map.obstacles is not None:
-           f.write("\n")
-        else:
-            if i != N - 1:
-                f.write("\n")
-
-    if map.obstacles is not None:
-        for obstacle in map.obstacles:
-            for i in range(4):
-                f.write(str(obstacle[i]))
-                if i != 3:
+        for i in range(self.N):
+            for j in range(self.M):
+                f.write(str(self.maze[i][j]))
+                if j != self.M - 1:
                     f.write(" ")
-            if map.obstacles.index(obstacle) != len(map.obstacles) - 1:
+            if self.obstacles is not None:
                 f.write("\n")
-    f.close()
+            else:
+                if i != self.N - 1:
+                    f.write("\n")
 
-
-def check_diagonal_wall(map: list[list[int]], N: int , M: int, x: int, y: int) -> bool:
-    if x == 0:
-        if y == 0:
-            return map[x+1][y+1] == 1
-        elif y == M - 1:
-            return map[x+1][y-1] == 1
-        else:
-            return map[x+1][y-1] == 1 or map[x+1][y+1] == 1
-    elif x == N - 1:
-        if y == 0:
-            return map[x-1][y+1] == 1
-        elif y == M - 1:
-            return map[x-1][y-1] == 1
-        else:
-            return map[x-1][y-1] == 1 or map[x-1][y+1] == 1
-    else:
-        if y == 0:
-            return map[x-1][y+1] == 1 or map[x+1][y+1] == 1
-        elif y == M - 1:
-            return map[x-1][y-1] == 1 or map[x+1][y-1] == 1
-        else:
-            return map[x-1][y-1] == 1 or map[x-1][y+1] == 1 or map[x+1][y-1] == 1 or map[x+1][y+1] == 1
+        if self.obstacles is not None:
+            for obstacle in self.obstacles:
+                for i in range(4):
+                    f.write(str(obstacle[i]))
+                    if i != 3:
+                        f.write(" ")
+                if self.obstacles.index(obstacle) != len(self.obstacles) - 1:
+                    f.write("\n")
+        f.close()
 
 
 def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, num_hiders: int) -> None:
@@ -170,6 +144,29 @@ def create_discrete_walls(map: list[list[int]], N: int, M: int) -> None:
     cnt_walls = 0
     max_continous_walls = (N+M) // 10
     cnt_continous_walls = 0
+
+    def check_diagonal_wall(map: list[list[int]], N: int , M: int, x: int, y: int) -> bool:
+        if x == 0:
+            if y == 0:
+                return map[x+1][y+1] == 1
+            elif y == M - 1:
+                return map[x+1][y-1] == 1
+            else:
+                return map[x+1][y-1] == 1 or map[x+1][y+1] == 1
+        elif x == N - 1:
+            if y == 0:
+                return map[x-1][y+1] == 1
+            elif y == M - 1:
+                return map[x-1][y-1] == 1
+            else:
+                return map[x-1][y-1] == 1 or map[x-1][y+1] == 1
+        else:
+            if y == 0:
+                return map[x-1][y+1] == 1 or map[x+1][y+1] == 1
+            elif y == M - 1:
+                return map[x-1][y-1] == 1 or map[x+1][y-1] == 1
+            else:
+                return map[x-1][y-1] == 1 or map[x-1][y+1] == 1 or map[x+1][y-1] == 1 or map[x+1][y+1] == 1
 
     while cnt_walls < num_walls:
         x = randint(0, N-1)
@@ -423,7 +420,7 @@ def generate_map_selectively(option: int) -> Map:
 
         
 
-new_map = generate_map_randomly(30, 50, 8, 2)
-# new_map = generate_map_selectively(3)
+# new_map = generate_map_randomly(30, 50, 8, 2)
+new_map = generate_map_selectively(3)
 if new_map is not None:
-    export_map(new_map, "Tests/mapL.txt")
+    new_map.export_map("Tests/map3_1.txt")
