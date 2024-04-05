@@ -16,7 +16,7 @@ class Announcement:
                 if y >= 0 and y < M: 
                     self.y = y
                     break
-            if shared_map[self.x][self.y] != 2 and shared_map[self.x][self.y] != 3 and shared_map[self.x][self.y] != 1:
+            if shared_map[self.x][self.y] != 2 and shared_map[self.x][self.y] != 3 and shared_map[self.x][self.y] != 1 and shared_map[self.x][self.y] != 7:
                 break
         self.map[self.x][self.y] = 6
     
