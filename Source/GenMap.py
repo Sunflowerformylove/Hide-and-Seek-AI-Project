@@ -14,7 +14,7 @@ def export_map(map: Map, file: str) -> None:
     N = map.N
     M = map.M
     f.write(str(N) + " " + str(M) + "\n")
-    
+
     for i in range(N):
         for j in range(M):
             f.write(str(map.maze[i][j]))
@@ -61,30 +61,6 @@ def check_diagonal_wall(map: list[list[int]], N: int , M: int, x: int, y: int) -
             return map[x-1][y-1] == 1 or map[x-1][y+1] == 1 or map[x+1][y-1] == 1 or map[x+1][y+1] == 1
 
 
-def is_in_cage(map: list[list[int]], N: int, M: int, x: int, y: int) -> bool: # check if the hider/seeker is in the cage made by walls or not
-    if x == 0:
-        if y == 0:
-            return map[x+1][y+1] == 1 and map[x][y+1] == 1 and map[x+1][y] == 1
-        elif y == M - 1:
-            return map[x+1][y-1] == 1 and map[x][y-1] == 1 and map[x+1][y] == 1
-        else:
-            return map[x+1][y-1] == 1 and map[x+1][y+1] == 1 and map[x+1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
-    elif x == N - 1:
-        if y == 0:
-            return map[x-1][y+1] == 1 and map[x][y+1] == 1 and map[x-1][y] == 1
-        elif y == M - 1:
-            return map[x-1][y-1] == 1 and map[x][y-1] == 1 and map[x-1][y] == 1
-        else:
-            return map[x-1][y-1] == 1 and map[x-1][y+1] == 1 and map[x-1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
-    else:
-        if y == 0:
-            return map[x-1][y+1] == 1 and map[x+1][y+1] == 1 and map[x][y+1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1
-        elif y == M - 1:
-            return map[x-1][y-1] == 1 and map[x+1][y-1] == 1 and map[x][y-1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1
-        else:
-            return map[x-1][y-1] == 1 and map[x-1][y+1] == 1 and map[x+1][y-1] == 1 and map[x+1][y+1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
-
-
 def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, num_hiders: int) -> None:
     cnt_hiders = 0
     cnt_seeker = 0
@@ -92,6 +68,29 @@ def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, nu
     is_zone2 = False
     is_zone3 = False
     is_zone4 = False
+
+    def is_in_cage(map: list[list[int]], N: int, M: int, x: int, y: int) -> bool: # check if the hider/seeker is in the cage made by walls or not
+        if x == 0:
+            if y == 0:
+                return map[x+1][y+1] == 1 and map[x][y+1] == 1 and map[x+1][y] == 1
+            elif y == M - 1:
+                return map[x+1][y-1] == 1 and map[x][y-1] == 1 and map[x+1][y] == 1
+            else:
+                return map[x+1][y-1] == 1 and map[x+1][y+1] == 1 and map[x+1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
+        elif x == N - 1:
+            if y == 0:
+                return map[x-1][y+1] == 1 and map[x][y+1] == 1 and map[x-1][y] == 1
+            elif y == M - 1:
+                return map[x-1][y-1] == 1 and map[x][y-1] == 1 and map[x-1][y] == 1
+            else:
+                return map[x-1][y-1] == 1 and map[x-1][y+1] == 1 and map[x-1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
+        else:
+            if y == 0:
+                return map[x-1][y+1] == 1 and map[x+1][y+1] == 1 and map[x][y+1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1
+            elif y == M - 1:
+                return map[x-1][y-1] == 1 and map[x+1][y-1] == 1 and map[x][y-1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1
+            else:
+                return map[x-1][y-1] == 1 and map[x-1][y+1] == 1 and map[x+1][y-1] == 1 and map[x+1][y+1] == 1 and map[x-1][y] == 1 and map[x+1][y] == 1 and map[x][y-1] == 1 and map[x][y+1] == 1
 
     # generate hiders positions
     while cnt_hiders < num_hiders:
@@ -151,14 +150,12 @@ def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, nu
             cnt_seeker += 1
 
 
-def generate_map_randomly(N: int, M: int, num_hiders: int, type_map = 0) -> Map: # N is row, M is column
+def generate_map_randomly(N: int, M: int, num_hiders: int, type_map: int) -> Map: # N is row, M is column
     map = [[0 for i in range(M)] for j in range(N)]
-    # 0: discrete walls
-    # 1: L-shape walls
 
-    if type_map == 0:
+    if type_map == 1: # 1: discrete walls
         create_discrete_walls(map, N, M)
-    elif type_map == 1:
+    elif type_map == 2: # 1: L-shape walls
         create_L_walls(map, N, M)
     else:
         return None
@@ -419,14 +416,14 @@ def generate_map_selectively(option: int) -> Map:
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
-        obstacles = [[44, 1, 45, 3], [22, 45, 24, 48], [14, 33, 16, 35], [30, 24, 33, 24]]
+        obstacles = [[44, 1, 45, 3], [22, 45, 24, 48], [14, 33, 16, 35]]
     else:
         return None
     return Map(N, M, maze, obstacles)
 
         
 
-new_map = generate_map_randomly(10, 25, 5, 1)
+new_map = generate_map_randomly(30, 50, 8, 2)
 # new_map = generate_map_selectively(3)
 if new_map is not None:
     export_map(new_map, "Tests/mapL.txt")
