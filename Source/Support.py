@@ -42,7 +42,7 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
                 if curPosY + i*direction[quarter][t][0] < 0 or curPosX + i*direction[quarter][t][1] < 0 or curPosY + i*direction[quarter][t][0] >= N or curPosX + i*direction[quarter][t][1] >= M:
                     break        
                 res.append((curPosY + i*direction[quarter][t][0], curPosX + i*direction[quarter][t][1]))     
-                if map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 1:
+                if map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 1 or map[curPosY + i*direction[quarter][t][0]][curPosX + i*direction[quarter][t][1]] == 7:
                     res.pop()
                     if i == 1:
                         nextPos1 = [curPosY + i*direction[quarter][t][0] + direction[quarter][3][0], curPosX + i*direction[quarter][t][1] + direction[quarter][3][1]]
@@ -62,18 +62,19 @@ def logic_vision(realMap, rad, curPosY, curPosX, N, M):
 
         for k in range(2):
             if curPosY + direction[quarter][3+k][0] >= 0 and curPosY + direction[quarter][3+k][0] <= N-1 and curPosX + direction[quarter][3+k][1] <= M-1 and curPosX + direction[quarter][3+k][1] >= 0: 
-                if (map[curPosY + direction[quarter][k][0]][curPosX + direction[quarter][k][1]] == 1 and map[curPosY + direction[quarter][k+1][0]][curPosX + direction[quarter][k+1][1]] == 1): map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] = 1
-                if map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 1:
+                if ((map[curPosY + direction[quarter][k][0]][curPosX + direction[quarter][k][1]] == 1 or map[curPosY + direction[quarter][k][0]][curPosX + direction[quarter][k][1]] == 7) and (map[curPosY + direction[quarter][k+1][0]][curPosX + direction[quarter][k+1][1]] == 1 or map[curPosY + direction[quarter][k+1][0]][curPosX + direction[quarter][k+1][1]] == 7)): 
+                    map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] = 1
+                if map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 1 and map[curPosY + direction[quarter][3+k][0]][curPosX + direction[quarter][3+k][1]] != 7:
                     res.append((curPosY + direction[quarter][3+k][0], curPosX + direction[quarter][3+k][1]))
                     if rad > 2:
                         # kiem tra o 10, 11 (hoac 13, 14) co nam trong bang va co bi chan boi cac o truoc khong
                         nextPosY1 = curPosY + direction[quarter][3+k][0] + direction[quarter][0+k][0]
                         nextPosX1 = curPosX + direction[quarter][3+k][1] + direction[quarter][0+k][1]
-                        if nextPosY1 >= 0 and nextPosY1 < N and nextPosX1 >= 0 and nextPosX1 < M and map[nextPosY1][nextPosX1] != 1:
+                        if nextPosY1 >= 0 and nextPosY1 < N and nextPosX1 >= 0 and nextPosX1 < M and map[nextPosY1][nextPosX1] != 1 and map[nextPosY1][nextPosX1] != 7:
                             res.append((nextPosY1, nextPosX1))
                         nextPosY2 = curPosY + direction[quarter][3+k][0] + direction[quarter][1+k][0]
                         nextPosX2 = curPosX + direction[quarter][3+k][1] + direction[quarter][1+k][1]
-                        if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 1:
+                        if nextPosY2 >= 0 and nextPosY2 < N and nextPosX2 >= 0 and nextPosX2 < M and map[nextPosY2][nextPosX2] != 1 and map[nextPosY2][nextPosX2] != 7:
                             res.append((nextPosY2, nextPosX2))
                 
     res = list(set(res))

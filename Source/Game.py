@@ -4,6 +4,8 @@ import time
 import pygame
 from Global import *
 from Graphic import *
+from Args import *
+import math
 
 pygame.init()
 running = True
@@ -30,16 +32,26 @@ running = True
 
 # Finding either hider or hider's last seen position will effectively clear the known map, as well as the random position
 # and its A* path, and the announcement and its A* path
+
+def format_time(seconds: int) -> str:
+    hours = "{:02d}".format(int(seconds // 3600))
+    minutes = "{:02d}".format(int(seconds // 60))
+    seconds = seconds % 60
+    seconds = "{:06.3f}".format(seconds) # at least 6 characters, 3 decimal points, 2 digits before decimal point, a dot
+    return f"{hours} : {minutes} : {seconds}"
+
 class Game:
-    def __init__(self, filename: str):
-        self.maze, self.MAP_DIMENSIONS = read_maze(filename)
+    def __init__(self):
+        global CELL_SIZE
+        global HEIGHT, WIDTH, MODE, FILENAME
+        self.maze, self.MAP_DIMENSIONS = read_maze(FILENAME)
         self.seeker = Seeker(self.maze, 0)
         self.hiders = self.set_hiders()
         self.announcements = self.set_announcements()
 
-    def reset_game(self, filename: str):
+    def reset(self):
         global SCORE
-        self.maze, self.MAP_DIMENSIONS = read_maze(filename)
+        self.maze, self.MAP_DIMENSIONS = read_maze(FILENAME)
         self.seeker = Seeker(self.maze, 0)
         self.hiders = self.set_hiders()
         self.announcements = self.set_announcements()
@@ -63,6 +75,15 @@ class Game:
         global SCORE
         global FPS
         global RUN
+        global MODE, DARK_MODE, LIGHT_MODE, DUNE_MODE
+        if MODE == "DARK":
+            colors = DARK_MODE
+        elif MODE == "LIGHT":
+            colors = LIGHT_MODE
+        elif MODE == "DUNE":
+            colors = DUNE_MODE
+        else:
+            colors = DARK_MODE
         vision = logic_vision(
             self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
         self.seeker.format_map_by_vision(vision)
@@ -91,8 +112,9 @@ class Game:
                     self.seeker = successor
                     if self.seeker.caught_hider(self.hiders, self.maze, self.announcements):
                         SCORE += 20
-                        winner = pygame.font.Font(None, 36).render(
-                            "Seeker wins", 1, (255, 235, 240))
+                        screen.fill(colors["background"])
+                        winner = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                            "Seeker wins", 1, colors["text"])
                         screen.blit(winner, (WIDTH - 10, 10))
                         show_maze(self.maze)
                         pygame.display.flip()
@@ -195,7 +217,7 @@ class Game:
                     self.hiders[i] = move
                 if turn_so_far >= 6:
                     turn_so_far = 0
-            screen.fill((0, 0, 0))
+            screen.fill(colors["background"])
             vision = logic_vision(
                 self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
@@ -203,23 +225,37 @@ class Game:
                 if show_map[cell[0]][cell[1]] == 0:
                     show_map[cell[0]][cell[1]] = 4
             handle_event()
-            turn_text = pygame.font.Font(None, 36).render(
-                "Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
+            turn_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Seeker's turn" if not turn else "Hider's turn", 1, colors["text"])
             screen.blit(turn_text, (10, 10))
-            score_text = pygame.font.Font(None, 36).render(
-                "Score: " + str(SCORE), 1, (255, 235, 240))
-            run_text = pygame.font.Font(None, 36).render(
-                "Run: #" + str(RUN), 1, (255, 235, 240))
+            score_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Score: " + str(SCORE), 1, colors["text"])
+            run_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Run: #" + str(RUN), 1, colors["text"])
+            FPS_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "FPS: " + str(math.ceil(clock.get_fps())), 1, colors["text"])
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
-            screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
+            screen.blit(score_text, (WIDTH / 2 - score_text.get_width() / 2, 10))
+            screen.blit(FPS_text, (WIDTH - 10 - FPS_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
             clock.tick(FPS)
             turn = not turn
+        RUNE += 1
 
     def level_2(self, num_hiders: int):
         global SCORE
         global RUN
+        global FPS
+        global MODE, DARK_MODE, LIGHT_MODE, DUNE_MODE
+        if MODE == "DARK":
+            colors = DARK_MODE
+        elif MODE == "LIGHT":
+            colors = LIGHT_MODE
+        elif MODE == "DUNE":
+            colors = DUNE_MODE
+        else:
+            colors = DARK_MODE
         vision = logic_vision(
             self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
         turn = False  # Seeker moves first
@@ -246,8 +282,9 @@ class Game:
                         num_hiders -= 1
                         SCORE += 20
                         if num_hiders == 0:
-                            winner = pygame.font.Font(None, 36).render(
-                                "Seeker wins", 1, (255, 235, 240))
+                            screen.fill(colors["background"])
+                            winner = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                                "Seeker wins", 1, colors["text"])
                             screen.blit(
                                 winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
@@ -352,7 +389,7 @@ class Game:
                     self.hiders[i] = move
                 if turn_so_far >= 6:
                     turn_so_far = 0
-            screen.fill((0, 0, 0))
+            screen.fill(colors["background"])
             vision = logic_vision(
                 self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
@@ -360,22 +397,37 @@ class Game:
                 if show_map[cell[0]][cell[1]] == 0:
                     show_map[cell[0]][cell[1]] = 4
             handle_event()
-            turn_text = pygame.font.Font(None, 36).render(
-                "Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
+            turn_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Seeker's turn" if not turn else "Hider's turn", 1, colors["text"])
             screen.blit(turn_text, (10, 10))
-            score_text = pygame.font.Font(None, 36).render(
-                "Score: " + str(SCORE), 1, (255, 235, 240))
+            score_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Score: " + str(SCORE), 1, colors["text"])
+            FPS_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "FPS: " + str(math.ceil(clock.get_fps())), 1, colors["text"])
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
-            run_text = pygame.font.Font(None, 36).render(
-                "Run: #" + str(RUN), 1, (255, 235, 240))
+            run_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Run: #" + str(RUN), 1, colors["text"])
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
+            screen.blit(FPS_text, (WIDTH - 10 - FPS_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
             clock.tick(FPS)
             turn = not turn
+        RUN += 1
 
     def level_3(self, num_hiders: int):
         global SCORE
+        global RUN
+        global FPS
+        global MODE, DARK_MODE, LIGHT_MODE, DUNE_MODE
+        if MODE == "DARK":
+            colors = DARK_MODE
+        elif MODE == "LIGHT":
+            colors = LIGHT_MODE
+        elif MODE == "DUNE":
+            colors = DUNE_MODE
+        else:
+            colors = DARK_MODE
         vision = logic_vision(
             self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
         turn = False  # Seeker moves first
@@ -411,8 +463,9 @@ class Game:
                             if announcement:
                                 self.maze[announcement.get_pos()[0]][announcement.get_pos()[1]] = 6
                         if num_hiders == 0:
-                            winner = pygame.font.Font(None, 36).render(
-                                "Seeker wins", 1, (255, 235, 240))
+                            screen.fill(colors["background"])
+                            winner = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                                "Seeker wins", 1, colors["text"])
                             screen.blit(
                                 winner, (WIDTH - winner.get_width() - 10, 10))
                             show_maze(self.maze)
@@ -542,7 +595,7 @@ class Game:
                         self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] = 2
                 if turn_so_far >= 6:
                     turn_so_far = 0
-            screen.fill((0, 0, 0))
+            screen.fill(colors["background"])
             vision = logic_vision(
                 self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
             show_map = copy.deepcopy(self.maze)
@@ -550,29 +603,49 @@ class Game:
                 if show_map[cell[0]][cell[1]] == 0:
                     show_map[cell[0]][cell[1]] = 4
             handle_event()
-            turn_text = pygame.font.Font(None, 36).render(
-                "Seeker's turn" if not turn else "Hider's turn", 1, (255, 235, 240))
+            turn_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Seeker's turn" if not turn else "Hider's turn", 1, colors["text"])
             screen.blit(turn_text, (10, 10))
-            score_text = pygame.font.Font(None, 36).render(
-                "Score: " + str(SCORE), 1, (255, 235, 240))
-            run_text = pygame.font.Font(None, 36).render(
-                "Run: #" + str(RUN), 1, (255, 235, 240))
+            score_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Score: " + str(SCORE), 1, colors["text"])
+            run_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Run: #" + str(RUN), 1, colors["text"])
+            FPS_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "FPS: " + str(math.ceil(clock.get_fps())), 1, colors["text"])
+            time = pygame.time.get_ticks() / 1000
+            time_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Time: " + format_time(time), 1, colors["text"])
+            screen.blit(time_text, (WIDTH - 10 - time_text.get_width(), HEIGHT - 10 - time_text.get_height()))
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
-            screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
+            screen.blit(score_text, (WIDTH / 2 - score_text.get_width() / 2, 10))
+            screen.blit(FPS_text, (WIDTH - 10 - FPS_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
             clock.tick(FPS)
             turn = not turn
-
-
-filename = "Tests/map4.txt"
-game = Game(filename)
-for i in range(100):
-    RUN = i + 1
-    print("Run: #", i + 1)
-    handle_event()
-    # game.level_1()
-    # game.level_2(len(game.hiders))
-    game.level_3(len(game.hiders))
-    game.reset_game(filename)
-pygame.quit()
+        RUN += 1
+            
+    def run(self):
+        global LEVEL, ITERATION
+        for i in range(ITERATION):
+            handle_event()
+            self.reset()
+            if LEVEL == "1":
+                self.level_1()
+            elif LEVEL == "2":
+                self.level_2(len(self.hiders))
+            elif LEVEL == "3":
+                self.level_3(len(self.hiders))
+        pygame.time.wait(1000)
+        handle_event()
+        screen.fill((95,146,145))
+        text = pygame.font.Font("Font/Dune_Rise.otf", 56).render(
+            "Game Over", 1, (255, 255, 255))
+        screen.blit(text, (WIDTH / 2 - text.get_width() / 2, HEIGHT / 2 - text.get_height() / 2))
+        pygame.display.flip()
+        PAUSE = True
+        while PAUSE:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    PAUSE = False
+        pygame.quit()
