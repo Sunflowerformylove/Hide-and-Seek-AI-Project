@@ -531,12 +531,19 @@ class Game:
                         self.maze, self.MAP_DIMENSIONS, furthest)
                     if A_star_ann == None:
                         prioritized = None
+                        self.seeker = self.seeker.clone()
                         continue
                     A_star_ann.pop(0)
                     successor = self.seeker.move_to_pos(
                         self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
                     swap(self.maze, self.seeker.current_pos, A_star_ann[0])
                     self.seeker = successor
+                    vision = logic_vision(
+                        self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1])
+                    self.seeker.format_map_by_vision(vision)
+                    for cell in vision:
+                        if cell in prioritized:
+                            prioritized.remove(cell)
                     A_star_ann.pop(0)
                 elif random_pos != None:
                     if A_star_res == None:

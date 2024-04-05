@@ -96,6 +96,9 @@ class Seeker:
             
     def set_position(self, pos: tuple[int, int]):
         self.current_pos = pos
+        
+    def clone(self):
+        return Seeker(copy.deepcopy(self.map), self.heuristic, self)
     
     def valid_moves(self, map: list[list[int]], map_dimensions: tuple[int, int], orthodox: bool = True) -> list[str]:
         moves = []
