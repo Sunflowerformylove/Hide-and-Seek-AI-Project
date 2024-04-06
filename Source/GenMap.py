@@ -33,6 +33,7 @@ class Map:
                 if self.obstacles.index(obstacle) != len(self.obstacles) - 1:
                     f.write("\n")
         f.close()
+        return file
 
 
 def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, num_hiders: int) -> None:

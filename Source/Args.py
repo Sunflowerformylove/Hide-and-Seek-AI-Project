@@ -5,6 +5,9 @@ import Game
 import random
 import importlib
 import os
+import math
+import time
+from GenMap import generate_map_randomly, Map
 
 def get_args():
     args = sys.argv
@@ -40,6 +43,17 @@ def change_global_vars(args):
         if key == "FILENAME":
             FILENAME = value
             if FILENAME == "RANDOM":
+                FILENAME = "Tests/" + random.choice(get_file_names())
+            elif FILENAME == "CREATE":
+                width = random.randint(10, 100)
+                height = random.randint(10, 100)
+                num_hiders = math.floor(max(width, height) / 10)
+                date = time.strftime("%d_%m_%Y_%H_%M_%S")
+                type_map = random.choice([1, 2])
+                new_map = generate_map_randomly(width, height, num_hiders, type_map)
+                FILENAME = "Tests/" + f"map_{width}_{height}_{num_hiders}_{date}.txt"
+                new_map.export_map(FILENAME)
+            elif FILENAME not in get_file_names():
                 FILENAME = "Tests/" + random.choice(get_file_names())
         if key == "FPS":
             FPS = int(value)
