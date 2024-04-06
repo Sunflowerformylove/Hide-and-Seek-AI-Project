@@ -33,12 +33,15 @@ running = True
 # Finding either hider or hider's last seen position will effectively clear the known map, as well as the random position
 # and its A* path, and the announcement and its A* path
 
+
 def format_time(seconds: int) -> str:
     hours = "{:02d}".format(int(seconds // 3600))
     minutes = "{:02d}".format(int(seconds // 60))
     seconds = seconds % 60
-    seconds = "{:06.3f}".format(seconds) # at least 6 characters, 3 decimal points, 2 digits before decimal point, a dot
+    # at least 6 characters, 3 decimal points, 2 digits before decimal point, a dot
+    seconds = "{:06.3f}".format(seconds)
     return f"{hours} : {minutes} : {seconds}"
+
 
 class Game:
     def __init__(self):
@@ -235,7 +238,8 @@ class Game:
             FPS_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
                 "FPS: " + str(math.ceil(clock.get_fps())), 1, colors["text"])
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
-            screen.blit(score_text, (WIDTH / 2 - score_text.get_width() / 2, 10))
+            screen.blit(score_text, (WIDTH / 2 -
+                        score_text.get_width() / 2, 10))
             screen.blit(FPS_text, (WIDTH - 10 - FPS_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
@@ -266,8 +270,10 @@ class Game:
         turn_so_far = 0
         while True:
             if not turn:
-                is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(self.maze, self.MAP_DIMENSIONS)
-                announce_in_vicinity, ann_pos = self.seeker.announce_in_vicinity(self.maze, self.MAP_DIMENSIONS)
+                is_in_vicinity, hider_pos = self.seeker.hider_in_vicinity(
+                    self.maze, self.MAP_DIMENSIONS)
+                announce_in_vicinity, ann_pos = self.seeker.announce_in_vicinity(
+                    self.maze, self.MAP_DIMENSIONS)
                 if is_in_vicinity:
                     if random_pos != None:
                         random_pos = None
@@ -461,7 +467,8 @@ class Game:
                         num_hiders -= 1
                         for announcement in self.announcements:
                             if announcement:
-                                self.maze[announcement.get_pos()[0]][announcement.get_pos()[1]] = 6
+                                self.maze[announcement.get_pos()[0]][announcement.get_pos()[
+                                    1]] = 6
                         if num_hiders == 0:
                             screen.fill(colors["background"])
                             winner = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
@@ -564,6 +571,10 @@ class Game:
                             self.maze, self.MAP_DIMENSIONS, A_star_res[0])
                         swap(self.maze, self.seeker.current_pos, A_star_res[0])
                         self.seeker = successor
+                        self.seeker.format_map_by_vision(logic_vision(
+                            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[
+                                1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]
+                        ))
                         A_star_res.pop(0)
                     else:
                         successor = self.seeker.move_to_pos(
@@ -603,13 +614,15 @@ class Game:
                                 self.maze[ann_prev_pos[0]][ann_prev_pos[1]] = 0
                             self.maze[ann_pos[0]][ann_pos[1]] = 6
                     else:
-                        if self.announcements[i]:  
+                        if self.announcements[i]:
                             if self.maze[self.announcements[i].get_pos()[0]][self.announcements[i].get_pos()[1]] == 6:
-                                self.maze[self.announcements[i].get_pos()[0]][self.announcements[i].get_pos()[1]] = 0
+                                self.maze[self.announcements[i].get_pos(
+                                )[0]][self.announcements[i].get_pos()[1]] = 0
                             self.announcements[i] = None
                     self.hiders[i] = move
                     if self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] == 0 or self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] == 6:
-                        self.maze[self.hiders[i].current_pos[0]][self.hiders[i].current_pos[1]] = 2
+                        self.maze[self.hiders[i].current_pos[0]
+                                  ][self.hiders[i].current_pos[1]] = 2
                 if turn_so_far >= 6:
                     turn_so_far = 0
             screen.fill(colors["background"])
@@ -632,16 +645,18 @@ class Game:
             time = pygame.time.get_ticks() / 1000
             time_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
                 "Time: " + format_time(time), 1, colors["text"])
-            screen.blit(time_text, (WIDTH - 10 - time_text.get_width(), HEIGHT - 10 - time_text.get_height()))
+            screen.blit(time_text, (WIDTH - 10 - time_text.get_width(),
+                        HEIGHT - 10 - time_text.get_height()))
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))
-            screen.blit(score_text, (WIDTH / 2 - score_text.get_width() / 2, 10))
+            screen.blit(score_text, (WIDTH / 2 -
+                        score_text.get_width() / 2, 10))
             screen.blit(FPS_text, (WIDTH - 10 - FPS_text.get_width(), 10))
             show_maze(show_map)
             pygame.display.flip()
             clock.tick(FPS)
             turn = not turn
         RUN += 1
-            
+
     def run(self):
         global LEVEL, ITERATION
         pygame.display.set_caption("Hide-and-Seek")
@@ -656,20 +671,21 @@ class Game:
                 self.level_3(len(self.hiders))
         pygame.time.wait(1000)
         handle_event()
-        screen.fill((95,146,145))
+        screen.fill((95, 146, 145))
         text = pygame.font.Font("Font/Dune_Rise.otf", 56).render(
             "Game Over", 1, (255, 255, 255))
-        screen.blit(text, (WIDTH / 2 - text.get_width() / 2, HEIGHT / 2 - text.get_height() / 2))
+        screen.blit(text, (WIDTH / 2 - text.get_width() /
+                    2, HEIGHT / 2 - text.get_height() / 2))
         pygame.display.flip()
         PAUSE = True
         while PAUSE:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     PAUSE = False
-                elif event.type == pygame.KEYDOWN:
+                elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.MOUSEBUTTONUP:
                     PAUSE = False
         pygame.quit()
-        
+
     def display(self):
         running = True
         pygame.display.set_caption("Maze")

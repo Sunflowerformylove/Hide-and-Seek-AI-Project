@@ -28,7 +28,7 @@ class Announcement:
         for i in range(self.x - 3, self.x + 4):
             for j in range(self.y - 3, self.y + 4):
                 if i >= 0 and i < len(self.map) and j >= 0 and j < len(self.map[0]):
-                    if self.map[i][j] != 1:
+                    if self.map[i][j] != 1 and self.map[i][j] != 7 and self.map[i][j] != 4 and self.map[i][j] != 6:
                         prioritized.append((i,j))
         return prioritized
 
