@@ -694,7 +694,7 @@ class Game:
     def display(self):
         running = True
         pygame.display.set_caption("Maze")
-        screen.fill((95, 146, 145))
+        screen.fill((154, 206, 235))
         show_maze(self.maze)
         pygame.display.flip()
         while running:
