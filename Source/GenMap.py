@@ -8,7 +8,6 @@ class Map:
         self.maze = maze
         self.obstacles = obstacles
 
-
     def export_map(self, file: str) -> None:
         f = open(file, "w+")
         f.write(str(self.N) + " " + str(self.M) + "\n")
@@ -198,14 +197,27 @@ def create_L_walls(map_: list[list[int]], N: int, M: int) -> None:
         return is_valid(x, y) and map_[x][y] == 0
 
     # Function to check if the placement creates a diagonal wall
-    def is_diagonal(x, y):
-        return is_valid(x-1, y-1) and is_valid(x+1, y+1) and map_[x-1][y] == 1 and map_[x][y-1] == 1  and map_[x+1][y] == 1 and map_[x][y+1] == 1
+    def is_diagonal(peak1, peak2, peak3): # 3 tuples representing positions of three peaks of the L-shape wall
+        if is_valid(peak1[0]-1,peak1[1]-1) and is_valid(peak1[0]-1,peak1[1]+1):
+            if map_[peak1[0]-1][peak1[1]-1] == 1 and map_[peak1[0]][peak1[1]-1] != 1 and map_[peak1[0]-1][peak1[1]] != 1:
+                return True
+            if map_[peak1[0]-1][peak1[1]+1] == 1 and map_[peak1[0]][peak1[1]+1] != 1 and map_[peak1[0]-1][peak1[1]] != 1:
+                return True
+        if is_valid(peak2[0]+1, peak2[1]-1): 
+            if map_[peak2[0]+1][peak2[1]-1] == 1 and map_[peak2[0]][peak2[1]-1] != 1 and map_[peak2[0]+1][peak2[1]] != 1:
+                return True
+        if is_valid(peak3[0]+1, peak3[1]+1):
+            if map_[peak3[0]+1][peak3[1]+1] == 1 and map_[peak3[0]][peak3[1]+1] != 1 and map_[peak3[0]+1][peak3[1]] != 1:
+                return True
+            if map_[peak3[0]-1][peak3[1]+1] == 1 and map_[peak3[0]][peak3[1]+1] != 1 and map_[peak3[0]-1][peak3[1]] != 1:
+                return True
+        return False
 
     # Shuffle the order of cells to place walls randomly
     cells = [(i, j) for i in range(N) for j in range(M)]
     shuffle(cells)
 
-    max_walls = (N + M) // 5 + 1
+    max_walls = (N + M) // 2 + max(N, M) // 10
     num_walls = 0
     while num_walls < max_walls:
         long_edge_size = randint(2, 3)
@@ -213,33 +225,37 @@ def create_L_walls(map_: list[list[int]], N: int, M: int) -> None:
         for i, j in cells:
             if long_edge_size == 3:
                 if short_edge_size == 1:
-                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+2, j) and can_place_wall(i+2, j+1) and not is_diagonal(i+2, j+1):
+                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+2, j) and can_place_wall(i+3, j) and can_place_wall(i+3, j+1) and not is_diagonal((i,j), (i+3,j), (i+3,j+1)):
+                        map_[i][j] = 1
+                        map_[i+1][j] = 1
+                        map_[i+2][j] = 1
+                        map_[i+3][j] = 1
+                        map_[i+3][j+1] = 1
+                        break
+                elif short_edge_size == 2:
+                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+2, j) and can_place_wall(i+3, j) and can_place_wall(i+3, j+1) and can_place_wall(i+3, j+2) and not is_diagonal((i,j), (i+3,j), (i+3,j+2)):
+                        map_[i][j] = 1
+                        map_[i+1][j] = 1
+                        map_[i+2][j] = 1
+                        map_[i+3][j] = 1
+                        map_[i+3][j+1] = 1
+                        map_[i+3][j+2] = 1
+                        break
+            elif long_edge_size == 2:
+                if short_edge_size == 1:
+                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+2, j) and can_place_wall(i+2, j+1) and not is_diagonal((i,j), (i+2,j), (i+2,j+1)):
                         map_[i][j] = 1
                         map_[i+1][j] = 1
                         map_[i+2][j] = 1
                         map_[i+2][j+1] = 1
                         break
                 elif short_edge_size == 2:
-                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+2, j) and can_place_wall(i+2, j+1) and can_place_wall(i+2, j+2) and not is_diagonal(i+2, j+2):
+                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+2, j) and can_place_wall(i+2, j+1) and can_place_wall(i+2, j+2) and not is_diagonal((i,j), (i+2,j), (i+2,j+2)):
                         map_[i][j] = 1
                         map_[i+1][j] = 1
                         map_[i+2][j] = 1
                         map_[i+2][j+1] = 1
                         map_[i+2][j+2] = 1
-                        break
-            elif long_edge_size == 2:
-                if short_edge_size == 1:
-                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+1, j+1) and not is_diagonal(i+1, j+1):
-                        map_[i][j] = 1
-                        map_[i+1][j] = 1
-                        map_[i+1][j+1] = 1
-                        break
-                elif short_edge_size == 2:
-                    if can_place_wall(i, j) and can_place_wall(i+1, j) and can_place_wall(i+1, j+1) and can_place_wall(i+1, j+2) and not is_diagonal(i+1, j+2):
-                        map_[i][j] = 1
-                        map_[i+1][j] = 1
-                        map_[i+1][j+1] = 1
-                        map_[i+1][j+2] = 1
                         break
         num_walls += 1
 
@@ -421,7 +437,7 @@ def generate_map_selectively(option: int) -> Map:
 
         
 
-new_map = generate_map_randomly(30, 30, 3, 2)
+new_map = generate_map_randomly(25, 50, 6, 2)
 # new_map = generate_map_selectively(3)
 if new_map is not None:
-    new_map.export_map("Tests/maze13.txt")
+    new_map.export_map("Tests/maze14.txt")
