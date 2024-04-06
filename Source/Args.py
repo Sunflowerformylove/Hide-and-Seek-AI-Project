@@ -53,8 +53,6 @@ def change_global_vars(args):
                 new_map = generate_map_randomly(width, height, num_hiders, type_map)
                 FILENAME = "Tests/" + f"map_{width}_{height}_{num_hiders}_{date}.txt"
                 new_map.export_map(FILENAME)
-            elif FILENAME not in get_file_names():
-                FILENAME = "Tests/" + random.choice(get_file_names())
         if key == "FPS":
             FPS = int(value)
         if key == "ITERATION":

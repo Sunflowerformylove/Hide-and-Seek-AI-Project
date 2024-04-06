@@ -245,7 +245,7 @@ class Game:
             pygame.display.flip()
             clock.tick(FPS)
             turn = not turn
-        RUNE += 1
+        RUN += 1
 
     def level_2(self, num_hiders: int):
         global SCORE
@@ -410,7 +410,12 @@ class Game:
                 "Score: " + str(SCORE), 1, colors["text"])
             FPS_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
                 "FPS: " + str(math.ceil(clock.get_fps())), 1, colors["text"])
+            time = pygame.time.get_ticks() / 1000
+            time_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
+                "Time: " + format_time(time), 1, colors["text"])
             screen.blit(score_text, (WIDTH / 2 - score_text.get_width(), 10))
+            screen.blit(time_text, (WIDTH - 10 - time_text.get_width(),
+                        HEIGHT - 10 - time_text.get_height()))
             run_text = pygame.font.Font("Font/Dune_Rise.otf", 20).render(
                 "Run: #" + str(RUN), 1, colors["text"])
             screen.blit(run_text, (10, HEIGHT - 10 - run_text.get_height()))

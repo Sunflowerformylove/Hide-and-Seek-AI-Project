@@ -437,7 +437,7 @@ def generate_map_selectively(option: int) -> Map:
 
         
 
-new_map = generate_map_randomly(25, 50, 6, 2)
+new_map = generate_map_randomly(50, 50, 5, 2)
 # new_map = generate_map_selectively(3)
 if new_map is not None:
     new_map.export_map("Tests/maze14.txt")
