@@ -33,6 +33,7 @@ class Map:
                 if self.obstacles.index(obstacle) != len(self.obstacles) - 1:
                     f.write("\n")
         f.close()
+        return file
 
 
 def generate_hider_and_seeker_positions(map: list[list[int]], N: int, M: int, num_hiders: int) -> None:
@@ -420,7 +421,7 @@ def generate_map_selectively(option: int) -> Map:
 
         
 
-new_map = generate_map_randomly(10, 25, 4, 2)
+new_map = generate_map_randomly(30, 30, 3, 2)
 # new_map = generate_map_selectively(3)
 if new_map is not None:
     new_map.export_map("Tests/maze13.txt")

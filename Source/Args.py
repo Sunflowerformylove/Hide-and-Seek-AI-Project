@@ -5,6 +5,9 @@ import Game
 import random
 import importlib
 import os
+import math
+import time
+from GenMap import generate_map_randomly, Map
 
 def get_args():
     args = sys.argv
@@ -23,7 +26,7 @@ def get_file_names():
     return filename_pool
 
 def change_global_vars(args):
-    global MODE, WIDTH, HEIGHT, LEVEL, FILENAME, FPS, ITERATION
+    global MODE, WIDTH, HEIGHT, LEVEL, FILENAME, FPS, ITERATION, RUN_MODE
     for key, value in args.items():
         if key == "MODE":
             MODE = value
@@ -41,12 +44,25 @@ def change_global_vars(args):
             FILENAME = value
             if FILENAME == "RANDOM":
                 FILENAME = "Tests/" + random.choice(get_file_names())
+            elif FILENAME == "CREATE":
+                width = random.randint(10, 100)
+                height = random.randint(10, 100)
+                num_hiders = math.floor(max(width, height) / 10)
+                date = time.strftime("%d_%m_%Y_%H_%M_%S")
+                type_map = random.choice([1, 2])
+                new_map = generate_map_randomly(width, height, num_hiders, type_map)
+                FILENAME = "Tests/" + f"map_{width}_{height}_{num_hiders}_{date}.txt"
+                new_map.export_map(FILENAME)
+            elif FILENAME not in get_file_names():
+                FILENAME = "Tests/" + random.choice(get_file_names())
         if key == "FPS":
             FPS = int(value)
         if key == "ITERATION":
             ITERATION = int(value)
             if ITERATION <= 0:
                 ITERATION = random.randint(1, 1000)
+        if key == "RUN_MODE":
+            RUN_MODE = value
     importlib.reload(Global)
     importlib.reload(Graphic)
     importlib.reload(Game)

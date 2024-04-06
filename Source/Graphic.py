@@ -37,9 +37,9 @@ def show_maze(maze: list[list[int]]) -> None:
         colors = DUNE_MODE
     else:
         colors = DARK_MODE
+    CELL_SIZE = min((HEIGHT - 50) // len(maze), (WIDTH - 50) // len(maze[0]))
     offset_width = WIDTH // 2 - len(maze[0]) * CELL_SIZE // 2
     offset_height = HEIGHT // 2 - len(maze) * CELL_SIZE // 2
-    CELL_SIZE = min((HEIGHT - 50) // len(maze), (WIDTH - 50) // len(maze[0]))
     border = 1
     for i in range(len(maze)):
         for j in range(len(maze[0])):

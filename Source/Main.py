@@ -8,7 +8,7 @@ import os
 def main():
     change_global_vars(get_args())
     game = Game()
-    game.run()
+    game.start()
 
 if __name__ == "__main__":
     main()
