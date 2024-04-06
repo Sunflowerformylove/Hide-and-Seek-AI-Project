@@ -499,6 +499,13 @@ class Game:
                     furthest = self.seeker.furthest_from_self(prioritized)
                     A_star_ann = self.seeker.trace_random(
                         self.maze, self.MAP_DIMENSIONS, furthest)
+                    if A_star_ann == None:
+                        prioritized = None
+                        self.seeker = self.seeker.clone()
+                        self.seeker.reset_known_map()
+                        self.seeker.format_map_by_vision(logic_vision(
+                            self.maze, 3, self.seeker.current_pos[0], self.seeker.current_pos[1], self.MAP_DIMENSIONS[0], self.MAP_DIMENSIONS[1]))
+                        continue
                     A_star_ann.pop(0)
                     successor = self.seeker.move_to_pos(
                         self.maze, self.MAP_DIMENSIONS, A_star_ann[0])
@@ -637,6 +644,7 @@ class Game:
             
     def run(self):
         global LEVEL, ITERATION
+        pygame.display.set_caption("Hide-and-Seek")
         for i in range(ITERATION):
             handle_event()
             self.reset()
@@ -660,4 +668,18 @@ class Game:
                     PAUSE = False
                 elif event.type == pygame.KEYDOWN:
                     PAUSE = False
+        pygame.quit()
+        
+    def display(self):
+        running = True
+        pygame.display.set_caption("Maze")
+        print_maze(self.maze)
+        # screen.fill((95, 146, 145))
+        show_maze(self.maze)
+        pygame.display.flip()
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
         pygame.quit()

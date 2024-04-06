@@ -9,6 +9,7 @@ def main():
     change_global_vars(get_args())
     game = Game()
     game.run()
+    # game.display()
 
 if __name__ == "__main__":
     main()
