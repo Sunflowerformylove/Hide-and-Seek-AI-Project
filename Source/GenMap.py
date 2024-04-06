@@ -198,13 +198,13 @@ def create_L_walls(map_: list[list[int]], N: int, M: int) -> None:
 
     # Function to check if the placement creates a diagonal wall
     def is_diagonal(x, y):
-        return is_valid(x-1, y-1) and map_[x-1][y] == 1 and map_[x][y-1] == 1
+        return is_valid(x-1, y-1) and is_valid(x+1, y+1) and map_[x-1][y] == 1 and map_[x][y-1] == 1  and map_[x+1][y] == 1 and map_[x][y+1] == 1
 
     # Shuffle the order of cells to place walls randomly
     cells = [(i, j) for i in range(N) for j in range(M)]
     shuffle(cells)
 
-    max_walls = (N + M) // 5
+    max_walls = (N + M) // 5 + 1
     num_walls = 0
     while num_walls < max_walls:
         long_edge_size = randint(2, 3)
@@ -420,7 +420,7 @@ def generate_map_selectively(option: int) -> Map:
 
         
 
-new_map = generate_map_randomly(100, 100, 10, 2)
+new_map = generate_map_randomly(10, 25, 4, 2)
 # new_map = generate_map_selectively(3)
 if new_map is not None:
-    new_map.export_map("Tests/maze12.txt")
+    new_map.export_map("Tests/maze13.txt")
