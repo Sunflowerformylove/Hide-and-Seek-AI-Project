@@ -698,3 +698,10 @@ class Game:
                     running = False
                     break
         pygame.quit()
+        
+    def start(self):
+        global RUN_MODE
+        if RUN_MODE == "GAME":
+            self.run()
+        elif RUN_MODE == "DISPLAY":
+            self.display()

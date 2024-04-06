@@ -23,7 +23,7 @@ def get_file_names():
     return filename_pool
 
 def change_global_vars(args):
-    global MODE, WIDTH, HEIGHT, LEVEL, FILENAME, FPS, ITERATION
+    global MODE, WIDTH, HEIGHT, LEVEL, FILENAME, FPS, ITERATION, RUN_MODE
     for key, value in args.items():
         if key == "MODE":
             MODE = value
@@ -47,6 +47,8 @@ def change_global_vars(args):
             ITERATION = int(value)
             if ITERATION <= 0:
                 ITERATION = random.randint(1, 1000)
+        if key == "RUN_MODE":
+            RUN_MODE = value
     importlib.reload(Global)
     importlib.reload(Graphic)
     importlib.reload(Game)
